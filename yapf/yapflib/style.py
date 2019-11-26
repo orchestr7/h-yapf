@@ -471,6 +471,7 @@ _STYLE_NAME_TO_FACTORY = dict(
     chromium=CreateChromiumStyle,
     google=CreateGoogleStyle,
     facebook=CreateFacebookStyle,
+    huawei=CreateHuaweiStyle
 )
 
 _DEFAULT_STYLE_TO_FACTORY = [
