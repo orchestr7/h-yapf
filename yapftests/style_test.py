@@ -124,6 +124,10 @@ class PredefinedStylesByNameTest(unittest.TestCase):
       cfg = style.CreateStyleFromConfig(fb_name)
       self.assertTrue(_LooksLikeFacebookStyle(cfg))
 
+  def testHuaweiByName(self):
+    for huawei_name in ('huawei', 'HUAWEI', 'Huawei'):
+      cfg = style.CreateStyleFromConfig(huawei_name)
+      self.assertTrue(_LooksLikeHuaweiStyle(cfg))
 
 class StyleFromFileTest(unittest.TestCase):
 
@@ -177,6 +181,17 @@ class StyleFromFileTest(unittest.TestCase):
     with utils.TempFileContents(self.test_tmpdir, cfg) as filepath:
       cfg = style.CreateStyleFromConfig(filepath)
       self.assertTrue(_LooksLikeGoogleStyle(cfg))
+      self.assertEqual(cfg['CONTINUATION_INDENT_WIDTH'], 20)
+
+  def testDefaultBasedOnHuaweiStyle(self):
+    cfg = textwrap.dedent(u'''\
+        [style]
+        based_on_style = huawei
+        continuation_indent_width = 20
+        ''')
+    with utils.TempFileContents(self.test_tmpdir, cfg) as filepath:
+      cfg = style.CreateStyleFromConfig(filepath)
+      self.assertTrue(_LooksLikeHuaweiStyle(cfg))
       self.assertEqual(cfg['CONTINUATION_INDENT_WIDTH'], 20)
 
   def testDefaultBasedOnFacebookStyle(self):

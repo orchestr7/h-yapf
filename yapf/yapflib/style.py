@@ -432,6 +432,11 @@ def CreateGoogleStyle():
   return style
 
 
+def CreateHuaweiStyle():
+  style = CreateGoogleStyle()
+  return style
+
+
 def CreateChromiumStyle():
   style = CreateGoogleStyle()
   style['ALLOW_MULTILINE_DICTIONARY_KEYS'] = True
@@ -473,6 +478,7 @@ _DEFAULT_STYLE_TO_FACTORY = [
     (CreateFacebookStyle(), CreateFacebookStyle),
     (CreateGoogleStyle(), CreateGoogleStyle),
     (CreatePEP8Style(), CreatePEP8Style),
+    (CreateHuaweiStyle(), CreateHuaweiStyle)
 ]
 
 
