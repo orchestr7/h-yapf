@@ -436,6 +436,7 @@ def CreateGoogleStyle():
 
 def CreateHuaweiStyle():
   style = CreateGoogleStyle()
+  style['NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS'] = '*'
   return style
 
 

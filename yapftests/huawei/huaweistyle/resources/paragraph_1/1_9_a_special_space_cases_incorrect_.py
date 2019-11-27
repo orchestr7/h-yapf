@@ -1,9 +1,15 @@
+a = b*c
 a = b * c
+d = e**f
 d = e ** f
 
-result. writeLog()
+a = ( (b + c) * d - 5 ) * 6
 
-a = ( (b + c)*d - 5 )*6
+result. writelog()
+
+def create(self, name = None):
+    self.create(name = name)
+
 
 dict [key] = list [index]
-conn = Telnet.connect (ipAddress)
+conn = connect (ip_address)
