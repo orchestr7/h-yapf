@@ -1,3 +1,9 @@
+"""
+Function: RunMainTest class. Testing of yapf application
+Copyright Information: Huawei Technologies Co., Ltd. All Rights Reserved © 2010-2019
+Change History: 2019-11-26 18:23 Created
+"""
+
 import glob
 import os
 import unittest
@@ -11,16 +17,22 @@ class RunMainTest(unittest.TestCase):
     RESOURCES_PATH = 'resources'
 
     def __find_corresponding_result(self, test_filename):
-        """All test files should have prefix INCORRECT, all expected result files should have prefix CORRECT"""
+        """All test files should have prefix INCORRECT, all expected result
+         files should have prefix CORRECT
+         """
         expected_file_path = test_filename.replace(self.INCORRECT, self.CORRECT)
         with open(expected_file_path, 'r') as file:
             expected_str = file.read()
         return expected_str
 
     def __get_tested_str(self):
-        """Run through resource path and run yapf on __incorrect__ files that should be fixed"""
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.RESOURCES_PATH)
-        all_test_files = glob.glob(os.path.join(path, '**', '*' + self.INCORRECT + '.py'), recursive=True)
+        """Run through resource path and run yapf on __incorrect__ files
+         that should be fixed
+         """
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            self.RESOURCES_PATH)
+        all_test_files = glob.glob(
+            os.path.join(path, '*', f'*{self.INCORRECT}.py'), recursive=True)
         test_set = set()
 
         for test in all_test_files:
