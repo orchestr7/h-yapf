@@ -8,7 +8,8 @@ import glob
 import os
 import unittest
 
-from yapf.yapflib import yapf_api, file_resources, style
+from yapf.yapflib import yapf_api
+from yapf.yapflib import style
 
 
 class RunMainTest(unittest.TestCase):
@@ -17,11 +18,6 @@ class RunMainTest(unittest.TestCase):
     RESOURCES_PATH = 'resources'
     WINDOWS_EOL = '\r\n'
     UNIX_EOL = '\n'
-
-    def __setConfigurationFromLocalFile(self):
-        style_config = file_resources.GetDefaultStyleForDir(os.getcwd())
-        style.SetGlobalStyle(style.CreateStyleFromConfig(style_config))
-        return style_config
 
     def __find_corresponding_result(self, test_filename):
         """All test files should have prefix INCORRECT, all expected result
@@ -45,15 +41,24 @@ class RunMainTest(unittest.TestCase):
 
         for test in all_test_files:
             test_name_str = os.path.basename(test)
-            conf = self.__setConfigurationFromLocalFile()
             expected_str = self.__find_corresponding_result(test)
-            test_str = yapf_api.FormatFile(test, style_config=conf)[0]
+            test_str = yapf_api.FormatFile(test)[0]
             test_str = test_str.replace(self.WINDOWS_EOL, self.UNIX_EOL)
 
             test_set.add((test_name_str, test_str, expected_str))
 
         return sorted(test_set)
 
+    @classmethod
+    def setUpClass(cls):
+        # We could as well pass `style_config='huawei'` to `FormatFile()`
+        # but configuring via `setUpClass()` is the way used in other tests
+        # (such as "reformatter_facebook_test").
+        # Besides, even if we did passed `style_config`, `FormatFile()`
+        # would call the very same `style.SetGlobalStyle()` inside itself
+        # anyway.
+        #
+        style.SetGlobalStyle(style.CreateHuaweiStyle())
 
     def test_run(self):
         self.__get_tested_str()
