@@ -43,6 +43,7 @@ from yapf.yapflib import comment_splicer
 from yapf.yapflib import continuation_splicer
 from yapf.yapflib import file_resources
 from yapf.yapflib import identify_container
+from yapf.yapflib import import_list_splitter
 from yapf.yapflib import py3compat
 from yapf.yapflib import pytree_unwrapper
 from yapf.yapflib import pytree_utils
@@ -140,11 +141,42 @@ def FormatCode(unformatted_source,
   blank_line_calculator.CalculateBlankLines(tree)
 
   uwlines = pytree_unwrapper.UnwrapPyTree(tree)
+
   for uwl in uwlines:
     uwl.CalculateFormattingInformation()
 
   lines = _LineRangesToSet(lines)
   _MarkLinesToFormat(uwlines, lines)
+
+  # Split import lists into a list of imports
+  # ```
+  # # input
+  # import a, b
+  #
+  # # output
+  # import a
+  # imoprt b
+  # ```
+  # 
+  # Instead of modifying unwrapped lines we could also change the parsed tree
+  # itself. The point is that, unlike most other rules, here we not just
+  # reformat some lines but actualy add new independed statements (like in
+  # the example above, where there are two `import` statemnts in the output
+  # vs a singe input statement).
+  #
+  # The chosen implementation, on the other hand, follow the general pattern,
+  # when all actual formatting happens on unwrapped lines. Here is a nuance,
+  # though. Since it is too late to actually modify the tree, all output
+  # `import` statements point to the same original node in the tree (i.e.
+  # unwrapped lines does not exactly match the code tree).
+  #
+  # Also, one more thing that must be taken into consideration. Whatever
+  # way we choose to split `import` statements, we must respect
+  # the '--lines' option (see `_MarkLinesToFormat()`).
+  #
+  if style.Get('SPLIT_SINGLE_LINE_IMPORTS'):
+      uwlines = import_list_splitter.split_import_lists(uwlines)
+
   reformatted_source = reformatter.Reformat(
       _SplitSemicolons(uwlines), verify, lines)
 

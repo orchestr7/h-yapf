@@ -351,6 +351,17 @@ _STYLE_HELP = dict(
     SPLIT_PENALTY_LOGICAL_OPERATOR=textwrap.dedent("""\
       The penalty of splitting the line around the 'and' and 'or'
       operators."""),
+    SPLIT_SINGLE_LINE_IMPORTS=textwrap.dedent("""\
+        Format import statements so that there is always a single
+        imported module per line.
+
+            import a, b
+
+        will be coverted to
+
+            import a
+            import b
+        """),
     USE_TABS=textwrap.dedent("""\
       Use the Tab character for indentation."""),
     # BASED_ON_STYLE='Which predefined style this style is based on',
@@ -411,6 +422,7 @@ def CreatePEP8Style():
       SPLIT_PENALTY_FOR_ADDED_LINE_SPLIT=30,
       SPLIT_PENALTY_IMPORT_NAMES=0,
       SPLIT_PENALTY_LOGICAL_OPERATOR=300,
+      SPLIT_SINGLE_LINE_IMPORTS=False,
       USE_TABS=False,
   )
 
@@ -437,6 +449,7 @@ def CreateGoogleStyle():
 def CreateHuaweiStyle():
   style = CreateGoogleStyle()
   style['NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS'] = '*'
+  style['SPLIT_SINGLE_LINE_IMPORTS'] = True
   return style
 
 
@@ -599,6 +612,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     SPLIT_PENALTY_FOR_ADDED_LINE_SPLIT=int,
     SPLIT_PENALTY_IMPORT_NAMES=int,
     SPLIT_PENALTY_LOGICAL_OPERATOR=int,
+    SPLIT_SINGLE_LINE_IMPORTS=_BoolConverter,
     USE_TABS=_BoolConverter,
 )
 
