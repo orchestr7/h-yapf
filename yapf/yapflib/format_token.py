@@ -157,7 +157,8 @@ class FormatToken(object):
         return ('\n' + without_newlines) * height
     return self.whitespace_prefix
 
-  def AddWhitespacePrefix(self, newlines_before, spaces=0, indent_level=0):
+  def AddWhitespacePrefix(self, newlines_before, spaces=0, indent_level=0,
+                          source_number_of_spaces=0):
     """Register a token's whitespace prefix.
 
     This is the whitespace that will be output before a token's string.
@@ -166,7 +167,11 @@ class FormatToken(object):
       newlines_before: (int) The number of newlines to place before the token.
       spaces: (int) The number of spaces to place before the token.
       indent_level: (int) The indentation level.
+      indents_override: (int) Real initial number of spaces from the source file
+                        see save_initial_idents_formatting option. In case it's
+                        not 0: this number of spaces will be used for the line
     """
+
     if style.Get('USE_TABS'):
       if newlines_before > 0:
         indent_before = '\t' * indent_level + _TabbedContinuationAlignPadding(
@@ -175,8 +180,14 @@ class FormatToken(object):
       else:
         indent_before = '\t' * indent_level + ' ' * spaces
     else:
-      indent_before = (' ' * indent_level * style.Get('INDENT_WIDTH') +
-                       ' ' * spaces)
+      # <huawei-hack> to prevent formatting to reduce number of diffs
+      # in source code. User is able to disable function of
+      # changing indents number in code using save_initial_idents_formatting
+      if source_number_of_spaces == 0:
+        indent_before = (' ' * indent_level * style.Get('INDENT_WIDTH') +
+                         ' ' * spaces)
+      else:
+        indent_before = ' ' * source_number_of_spaces
 
     if self.is_comment:
       comment_lines = [s.lstrip() for s in self.value.splitlines()]

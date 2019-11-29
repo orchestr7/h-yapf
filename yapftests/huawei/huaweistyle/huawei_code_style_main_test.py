@@ -8,13 +8,20 @@ import glob
 import os
 import unittest
 
-from yapf.yapflib import yapf_api
+from yapf.yapflib import yapf_api, file_resources, style
 
 
 class RunMainTest(unittest.TestCase):
     INCORRECT = '_incorrect_'
     CORRECT = '_correct_'
     RESOURCES_PATH = 'resources'
+    WINDOWS_EOL = '\r\n'
+    UNIX_EOL = '\n'
+
+    def __setConfigurationFromLocalFile(self):
+        style_config = file_resources.GetDefaultStyleForDir(os.getcwd())
+        style.SetGlobalStyle(style.CreateStyleFromConfig(style_config))
+        return style_config
 
     def __find_corresponding_result(self, test_filename):
         """All test files should have prefix INCORRECT, all expected result
@@ -23,7 +30,8 @@ class RunMainTest(unittest.TestCase):
         expected_file_path = test_filename.replace(self.INCORRECT, self.CORRECT)
         with open(expected_file_path, 'r') as file:
             expected_str = file.read()
-        return expected_str
+        # small hack to fix changing of EOL to WIN format
+        return expected_str.replace(self.WINDOWS_EOL, self.UNIX_EOL)
 
     def __get_tested_str(self):
         """Run through resource path and run yapf on __incorrect__ files
@@ -36,14 +44,19 @@ class RunMainTest(unittest.TestCase):
         test_set = set()
 
         for test in all_test_files:
-            expected_str = self.__find_corresponding_result(test)
             test_name_str = os.path.basename(test)
-            test_str = yapf_api.FormatFile(test)[0]
+            conf = self.__setConfigurationFromLocalFile()
+            expected_str = self.__find_corresponding_result(test)
+            test_str = yapf_api.FormatFile(test, style_config=conf)[0]
+            test_str = test_str.replace(self.WINDOWS_EOL, self.UNIX_EOL)
 
             test_set.add((test_name_str, test_str, expected_str))
+
         return sorted(test_set)
 
+
     def test_run(self):
+        self.__get_tested_str()
         for test_name, test, expected in self.__get_tested_str():
             with self.subTest(msg=test_name):
                 self.assertEqual(test, expected)

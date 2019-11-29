@@ -600,6 +600,13 @@ ONE_BLANK_LINE = 2
 TWO_BLANK_LINES = 3
 
 
+def _GetInitialIndentsFromSource(first_token):
+  spaces = 0
+  if style.Get('SAVE_INITIAL_IDENTS_FORMATTING'):
+        spaces = first_token.column
+  return spaces
+
+
 def _IsClassOrDef(tok):
   if tok.value in {'class', 'def', '@'}:
     return True

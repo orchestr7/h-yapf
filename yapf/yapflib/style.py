@@ -205,6 +205,8 @@ _STYLE_HELP = dict(
 
         1 + 2*3 - 4/5
       """),
+    SAVE_INITIAL_IDENTS_FORMATTING=textwrap.dedent("""\
+      This option will allow to prevent formatting of indents """),
     SPACE_BETWEEN_ENDING_COMMA_AND_CLOSING_BRACKET=textwrap.dedent("""\
       Insert a space between the ending comma and closing bracket of a list,
       etc."""),
@@ -568,6 +570,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     INDENT_BLANK_LINES=_BoolConverter,
     JOIN_MULTIPLE_LINES=_BoolConverter,
     NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=_StringSetConverter,
+    SAVE_INITIAL_IDENTS_FORMATTING=_BoolConverter,
     SPACE_BETWEEN_ENDING_COMMA_AND_CLOSING_BRACKET=_BoolConverter,
     SPACES_AROUND_POWER_OPERATOR=_BoolConverter,
     SPACES_AROUND_DEFAULT_OR_NAMED_ASSIGN=_BoolConverter,
