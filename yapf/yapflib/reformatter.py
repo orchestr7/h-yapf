@@ -592,7 +592,8 @@ def _FormatFirstToken(first_token, indent_depth, prev_uwline, final_lines):
   first_token.AddWhitespacePrefix(
       _CalculateNumberOfNewlines(first_token, indent_depth, prev_uwline,
                                  final_lines, first_nested),
-      indent_level=indent_depth)
+      indent_level=indent_depth,
+      source_number_of_spaces=_GetInitialIndentsFromSource(first_token))
 
 
 NO_BLANK_LINES = 1
