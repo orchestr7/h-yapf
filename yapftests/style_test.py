@@ -93,6 +93,10 @@ def _LooksLikeFacebookStyle(cfg):
   return cfg['INDENT_WIDTH'] == 4 and cfg['DEDENT_CLOSING_BRACKETS']
 
 
+def _LooksLikeHuaweiStyle(cfg):
+  return cfg['BLANK_LINES_AFTER_INDENTED_BLOCKS']
+
+
 class PredefinedStylesByNameTest(unittest.TestCase):
 
   @classmethod
