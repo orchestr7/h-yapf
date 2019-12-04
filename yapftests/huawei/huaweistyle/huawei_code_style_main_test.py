@@ -1,4 +1,4 @@
-# -*- coding: utf-8
+# -*- coding: utf-8 -*-
 """
 Function: RunMainTest class. Testing of yapf application
 Copyright Information: Huawei Technologies Co., Ltd. All Rights Reserved © 2010-2019
@@ -7,62 +7,60 @@ Change History: 2019-11-26 18:23 Created
 
 import glob
 import os
-import unittest
+import sys
 
-from yapf.yapflib import yapf_api
-from yapf.yapflib import style
+from yapftests import yapf_test_helper
+from yapftests.huawei.huaweistyle.test_set import TestSet
 
 
-class RunMainTest(unittest.TestCase):
+class RunMainTest(yapf_test_helper.YAPFTest):
     INCORRECT = '_incorrect_'
     CORRECT = '_correct_'
+    WARN = '_warning_'
+    MSG_FILE = '.msg'
     RESOURCES_PATH = 'resources'
-    WINDOWS_EOL = '\r\n'
-    UNIX_EOL = '\n'
 
-    def __find_corresponding_result(self, test_filename):
-        """All test files should have prefix INCORRECT, all expected result
-         files should have prefix CORRECT
-         """
-        expected_file_path = test_filename.replace(self.INCORRECT, self.CORRECT)
-        with open(expected_file_path, 'r') as file:
-            expected_str = file.read()
-        # small hack to fix changing of EOL to WIN format
-        return expected_str.replace(self.WINDOWS_EOL, self.UNIX_EOL)
+    def test(self):
+        for test_name, test, expected in self.__get_test_sets():
+            with self.subTest(msg=test_name):
+                # test checks warnings (stderr)
+                if self.WARN in test_name:
+                    self.assertCodeEqual(expected, sys.stderr.get)
 
-    def __get_tested_str(self):
-        """Run through resource path and run yapf on __incorrect__ files
-         that should be fixed
-         """
+                # test checks fixes
+                if self.INCORRECT in test_name:
+                    self.assertCodeEqual(expected, test)
+
+    def setUp(self):
+        class RedirectedStdErr:
+            get = ''
+
+            def write(self, redirect_str):
+                self.get = redirect_str
+
+        self.__prev_state = sys.stderr
+        sys.stderr = RedirectedStdErr()
+
+    def tearDown(self):
+        sys.stderr = self.__prev_state
+
+    def __find_matching_resources(self, pattern):
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             self.RESOURCES_PATH)
-        all_test_files = glob.glob(
-            os.path.join(path, '*', f'*{self.INCORRECT}.py'), recursive=True)
-        test_set = set()
+        return glob.glob(os.path.join(path, '*', f'*{pattern}.py'),
+                         recursive=True)
 
-        for test in all_test_files:
-            test_name_str = os.path.basename(test)
-            expected_str = self.__find_corresponding_result(test)
-            test_str = yapf_api.FormatFile(test)[0]
-            test_str = test_str.replace(self.WINDOWS_EOL, self.UNIX_EOL)
+    def __get_test_sets(self):
+        """Create test sets for all test cases:
+        1) that are expected to be fixed (_incorrect_)
+        2) that are expected to generate a warning (_warning_)
+         """
+        test_set_res = TestSet()
 
-            test_set.add((test_name_str, test_str, expected_str))
+        all_test_fixes = self.__find_matching_resources(self.INCORRECT)
+        test_set_res.enrich(all_test_fixes, self.INCORRECT, self.CORRECT)
 
-        return sorted(test_set)
+        all_test_warn = self.__find_matching_resources(self.WARN)
+        test_set_res.enrich(all_test_warn, self.WARN + '.py', self.MSG_FILE)
 
-    @classmethod
-    def setUpClass(cls):
-        # We could as well pass `style_config='huawei'` to `FormatFile()`
-        # but configuring via `setUpClass()` is the way used in other tests
-        # (such as "reformatter_facebook_test").
-        # Besides, even if we did passed `style_config`, `FormatFile()`
-        # would call the very same `style.SetGlobalStyle()` inside itself
-        # anyway.
-        #
-        style.SetGlobalStyle(style.CreateHuaweiStyle())
-
-    def test_run(self):
-        self.__get_tested_str()
-        for test_name, test, expected in self.__get_tested_str():
-            with self.subTest(msg=test_name):
-                self.assertEqual(test, expected)
+        return sorted(test_set_res.test_set)

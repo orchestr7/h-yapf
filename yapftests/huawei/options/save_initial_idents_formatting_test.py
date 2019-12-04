@@ -27,7 +27,7 @@ class RunMainTest(yapf_test_helper.YAPFTest):
 
         uwlines = yapf_test_helper.ParseAndUnwrap(unformatted_code)
         self.assertCodeEqual(formatted_code,
-                             reformatter.Reformat(uwlines))
+                             reformatter.Reformat(uwlines, 'test_file'))
 
     def test_positive_case(self):
         formatted_code = textwrap.dedent("""\
@@ -36,7 +36,7 @@ class RunMainTest(yapf_test_helper.YAPFTest):
                                  if True:
                                     if True:
                                                                print('True')
-                                """)
+                        """)
         self.__check_test('True', formatted_code)
 
     def test_negative_case(self):

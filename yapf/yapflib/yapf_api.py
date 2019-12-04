@@ -178,7 +178,7 @@ def FormatCode(unformatted_source,
       uwlines = import_list_splitter.split_import_lists(uwlines)
 
   reformatted_source = reformatter.Reformat(
-      _SplitSemicolons(uwlines), verify, lines)
+      _SplitSemicolons(uwlines), filename, verify, lines)
 
   if unformatted_source == reformatted_source:
     return '' if print_diff else reformatted_source, False

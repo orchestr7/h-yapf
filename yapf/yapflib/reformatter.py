@@ -34,9 +34,10 @@ from yapf.yapflib import line_joiner
 from yapf.yapflib import pytree_utils
 from yapf.yapflib import style
 from yapf.yapflib import verifier
+from yapf.yapflib.warnings_utils import check_encoding_in_header
 
 
-def Reformat(uwlines, verify=False, lines=None):
+def Reformat(uwlines, filename, verify=False, lines=None, ):
   """Reformat the unwrapped lines.
 
   Arguments:
@@ -51,6 +52,9 @@ def Reformat(uwlines, verify=False, lines=None):
   final_lines = []
   prev_uwline = None  # The previous line.
   indent_width = style.Get('INDENT_WIDTH')
+
+  # special checks for a format of a header that can produce warnings
+  check_encoding_in_header(uwlines, style, filename)
 
   for uwline in _SingleOrMergedLines(uwlines):
     first_token = uwline.first
