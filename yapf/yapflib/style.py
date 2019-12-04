@@ -99,6 +99,8 @@ _STYLE_HELP = dict(
     BLANK_LINES_AROUND_TOP_LEVEL_DEFINITION=textwrap.dedent("""\
       Number of blank lines surrounding top-level function and class
       definitions."""),
+    BLANK_LINES_AFTER_INDENTED_BLOCKS=textwrap.dedent("""\
+      Insert a blank line after each and every indented objects."""),
     COALESCE_BRACKETS=textwrap.dedent("""\
       Do not split consecutive brackets. Only relevant when
       dedent_closing_brackets is set. For example:
@@ -380,6 +382,7 @@ def CreatePEP8Style():
       BLANK_LINE_BEFORE_CLASS_DOCSTRING=False,
       BLANK_LINE_BEFORE_MODULE_DOCSTRING=False,
       BLANK_LINES_AROUND_TOP_LEVEL_DEFINITION=2,
+      BLANK_LINES_AFTER_INDENTED_BLOCKS=False,
       COALESCE_BRACKETS=False,
       COLUMN_LIMIT=79,
       CONTINUATION_ALIGN_STYLE='SPACE',
@@ -566,6 +569,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     ALLOW_SPLIT_BEFORE_DEFAULT_OR_NAMED_ASSIGNS=_BoolConverter,
     ALLOW_SPLIT_BEFORE_DICT_VALUE=_BoolConverter,
     ARITHMETIC_PRECEDENCE_INDICATION=_BoolConverter,
+    BLANK_LINES_AFTER_INDENTED_BLOCKS=_BoolConverter,
     BLANK_LINE_BEFORE_NESTED_CLASS_OR_DEF=_BoolConverter,
     BLANK_LINE_BEFORE_CLASS_DOCSTRING=_BoolConverter,
     BLANK_LINE_BEFORE_MODULE_DOCSTRING=_BoolConverter,
