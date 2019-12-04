@@ -44,6 +44,7 @@ from yapf.yapflib import continuation_splicer
 from yapf.yapflib import file_resources
 from yapf.yapflib import identify_container
 from yapf.yapflib import import_list_splitter
+from yapf.yapflib import long_lines_splitter
 from yapf.yapflib import py3compat
 from yapf.yapflib import pytree_unwrapper
 from yapf.yapflib import pytree_utils
@@ -132,6 +133,9 @@ def FormatCode(unformatted_source,
     e.msg = filename + ': ' + e.msg
     raise
 
+  # disabled lines
+  lines = _LineRangesToSet(lines)
+
   # Run passes on the tree, modifying it in place.
   comment_splicer.SpliceComments(tree)
   continuation_splicer.SpliceContinuations(tree)
@@ -139,13 +143,13 @@ def FormatCode(unformatted_source,
   identify_container.IdentifyContainers(tree)
   split_penalty.ComputeSplitPenalties(tree)
   blank_line_calculator.CalculateBlankLines(tree)
+  long_lines_splitter.SplitLongLines(tree, lines)
 
   uwlines = pytree_unwrapper.UnwrapPyTree(tree)
 
   for uwl in uwlines:
     uwl.CalculateFormattingInformation()
 
-  lines = _LineRangesToSet(lines)
   _MarkLinesToFormat(uwlines, lines)
 
   # Split import lists into a list of imports

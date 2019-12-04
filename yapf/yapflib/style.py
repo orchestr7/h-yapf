@@ -196,6 +196,17 @@ _STYLE_HELP = dict(
       The number of columns to use for indentation."""),
     INDENT_BLANK_LINES=textwrap.dedent("""\
       Indent blank lines."""),
+    FORCE_LONG_LINES_WRAPPING=textwrap.dedent("""\
+      Enclose long lines in parentheses in order to make them wrappable:
+
+          # input
+          if with > 10 ... and height > 10:
+              ...
+
+          # output
+          if (with > 10 ... and height > 10):
+              ...
+      """),
     JOIN_MULTIPLE_LINES=textwrap.dedent("""\
       Join short lines into one line. E.g., single line 'if' statements."""),
     NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=textwrap.dedent("""\
@@ -391,6 +402,7 @@ def CreatePEP8Style():
       INDENT_CLOSING_BRACKETS=False,
       DISABLE_ENDING_COMMA_HEURISTIC=False,
       EACH_DICT_ENTRY_ON_SEPARATE_LINE=True,
+      FORCE_LONG_LINES_WRAPPING=False,
       I18N_COMMENT='',
       I18N_FUNCTION_CALL='',
       INDENT_DICTIONARY_VALUE=False,
@@ -458,6 +470,8 @@ def CreateHuaweiStyle():
   style['SPLIT_SINGLE_LINE_IMPORTS'] = True
   style['BLANK_LINES_AFTER_INDENTED_BLOCKS'] = True
   style['SAVE_INITIAL_IDENTS_FORMATTING'] = False
+  style['COLUMN_LIMIT'] = 80
+  style['FORCE_LONG_LINES_WRAPPING'] = True
   return style
 
 
@@ -591,6 +605,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     INDENT_DICTIONARY_VALUE=_BoolConverter,
     INDENT_WIDTH=int,
     INDENT_BLANK_LINES=_BoolConverter,
+    FORCE_LONG_LINES_WRAPPING=_BoolConverter,
     JOIN_MULTIPLE_LINES=_BoolConverter,
     NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=_StringSetConverter,
     SAVE_INITIAL_IDENTS_FORMATTING=_BoolConverter,
