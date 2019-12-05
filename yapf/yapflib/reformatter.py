@@ -37,7 +37,7 @@ from yapf.yapflib import verifier
 from yapf.yapflib.warnings_utils import check_encoding_in_header
 
 
-def Reformat(uwlines, filename, verify=False, lines=None, ):
+def Reformat(uwlines, filename='<unknown>', verify=False, lines=None, ):
   """Reformat the unwrapped lines.
 
   Arguments:
@@ -45,6 +45,7 @@ def Reformat(uwlines, filename, verify=False, lines=None, ):
     verify: (bool) True if reformatted code should be verified for syntax.
     lines: (set of int) The lines which can be modified or None if there is no
       line range restriction.
+    filename: name of the file with sources for code style fixing 
 
   Returns:
     A string representing the reformatted code.

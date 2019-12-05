@@ -456,6 +456,8 @@ def CreateHuaweiStyle():
   style['SHOULD_HAVE_ENCODING_HEADER'] = True
   style['NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS'] = '*'
   style['SPLIT_SINGLE_LINE_IMPORTS'] = True
+  style['BLANK_LINES_AFTER_INDENTED_BLOCKS'] = True
+  style['SAVE_INITIAL_IDENTS_FORMATTING'] = False
   return style
 
 
