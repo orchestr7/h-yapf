@@ -44,7 +44,7 @@ def log_warn(warn, line_number, column_num, filename):
 encoding_regex = re.compile('^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
 
 
-# will check if header contains encoding declaration
+# will check if header contains encoding declaration in 1st or 2nd line
 # WARN: ENCODING_WARNING
 # Control option: SHOULD_HAVE_ENCODING_HEADER
 def check_encoding_in_header(uwlines, style, filename):
@@ -59,10 +59,17 @@ def check_encoding_in_header(uwlines, style, filename):
             log_warn(Warnings.ENCODING, 1, 1, os.path.basename(filename))
 
 
+EOL_LINUX = '\n'
+
+
+def is_comment_with_encoding(comment):
+    return encode_regex.match(comment)
+
+
 def is_encoding_in_first_or_second_line(comments):
     if len(comments) == 1:
         return bool(encoding_regex.match(comments[0]))
-    if len(comments) == 2:
+    if len(comments) >= 2:
         return bool(encoding_regex.match(comments[0]) or
                 encoding_regex.match(comments[1]))
     return False
@@ -116,3 +123,7 @@ def check_if_global_vars_commented(uwlines, style, filename):
             log_warn(Warnings.GLOBAL_VAR_COMMENT,
                 uwl.lineno, uwl.first.column, os.path.basename(filename))
         prev = uwl
+def get_str_with_encoding(comments_str):
+    return next(
+        filter(is_comment_with_encoding, comments_str.split(EOL_LINUX)), None
+    )

@@ -53,6 +53,7 @@ from yapf.yapflib import reformatter
 from yapf.yapflib import split_penalty
 from yapf.yapflib import style
 from yapf.yapflib import subtype_assigner
+from yapf.yapflib.ordering_utils import order_main_code_blocks
 
 
 def FormatFile(filename,
@@ -147,6 +148,8 @@ def FormatCode(unformatted_source,
   long_lines_splitter.SplitLongLines(tree, lines)
 
   uwlines = pytree_unwrapper.UnwrapPyTree(tree)
+
+  order_main_code_blocks(uwlines, style)
 
   for uwl in uwlines:
     uwl.CalculateFormattingInformation()

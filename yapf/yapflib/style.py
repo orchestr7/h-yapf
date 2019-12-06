@@ -47,6 +47,12 @@ def SetGlobalStyle(style):
 
 
 _STYLE_HELP = dict(
+    AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD=textwrap.dedent("""\
+      If enabled (True) will find all imports used in code and move it right to
+      the beginning of the file. It would be added after all
+      comments/doc strings from the beginning of the file.
+      Note! It won't move indented imports from code blocks.
+    """),
     ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT=textwrap.dedent("""\
       Align closing bracket with visual indentation."""),
     ALLOW_MULTILINE_LAMBDAS=textwrap.dedent("""\
@@ -388,6 +394,7 @@ _STYLE_HELP = dict(
 
 def CreatePEP8Style():
   return dict(
+      AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD = False,
       ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT=True,
       ALLOW_MULTILINE_LAMBDAS=False,
       ALLOW_MULTILINE_DICTIONARY_KEYS=False,
@@ -472,6 +479,7 @@ def CreateGoogleStyle():
 
 def CreateHuaweiStyle():
   style = CreateGoogleStyle()
+  style['AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD'] = True
   style['SHOULD_HAVE_ENCODING_HEADER'] = True
   style['NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS'] = '*'
   style['SPLIT_SINGLE_LINE_IMPORTS'] = True
@@ -590,6 +598,7 @@ def _IntOrIntListConverter(s):
 #
 # Note: this dict has to map all the supported style options.
 _STYLE_OPTION_VALUE_CONVERTER = dict(
+    AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD=_BoolConverter,
     ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT=_BoolConverter,
     ALLOW_MULTILINE_LAMBDAS=_BoolConverter,
     ALLOW_MULTILINE_DICTIONARY_KEYS=_BoolConverter,
