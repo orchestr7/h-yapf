@@ -3,11 +3,30 @@
 Function: Split import statements when multipe modules are imported.
 Copyright Information: Huawei Technologies Co., Ltd. All Rights Reserved © 2010-2019
 Change History: 2019-11-28 Created
+
+
+Split import lists into a list of imports
+```
+    # input
+    import a, b
+
+    # output
+    import a
+    imoprt b
+```
+
+Instead of modifying unwrapped lines we could also change the parsed tree
+itself. The point is that, unlike most other rules, here we not just
+reformat some lines but actualy add new independed statements (like in
+the example above, where there are two `import` statemnts in the output
+vs a singe input statement).
 """
+
 
 import copy
 
 from . import format_token
+from . import style
 from . import unwrapped_line
 
 
@@ -50,6 +69,9 @@ def split_import_list(uwl):
 
 
 def split_import_lists(uwlines):
+    if not style.Get('SPLIT_SINGLE_LINE_IMPORTS'):
+        return uwlines
+
     out_uwlines = []
     for uwl in uwlines:
         if not uwl.disable and is_import_stmt(uwl) and has_comma(uwl):
