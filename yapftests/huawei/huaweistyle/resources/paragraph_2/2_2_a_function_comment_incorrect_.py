@@ -1,6 +1,9 @@
-class CommentedClass():
+def some_function():
+
     """
     Function description: some description
-    Interface:
+    Parameters:
+    Return Value:
+    Exception Description:
     Change History:
     """
