@@ -11,10 +11,18 @@ import textwrap
 
 import threading
 
+from lib2to3.pygram import python_symbols as syms
+
+from . import pytree_utils
+
+
 WARNINGS_DESCRIPTION = dict(
     ENCODING_WARNING=textwrap.dedent(
         "Each source file should have encoding header on the first or second line"
         " like [# -*- coding: <encoding format> -*-] (see also: pep-0263)"),
+    GLOBAL_VAR_COMMENT_WARNING=textwrap.dedent(
+        "Detailed comments should be added to each global variable"
+    ),
 )
 
 
@@ -38,8 +46,8 @@ def check_encoding_in_header(uwlines, style, filename):
             first_line = uwlines[0]
             first_token = first_line.tokens[0]
             if first_token.is_comment:
-                all_comments = first_token.value.split('\n')
-                if is_encoding_in_first_or_second_line(all_comments):
+                comments = first_token.value.split('\n')
+                if is_encoding_in_first_or_second_line(comments):
                     return
             log_warn(WARNINGS_DESCRIPTION.get('ENCODING_WARNING'),
                      1, 1, os.path.basename(filename))
@@ -52,3 +60,53 @@ def is_encoding_in_first_or_second_line(comments):
         return bool(encoding_regex.match(comments[0]) or
                 encoding_regex.match(comments[1]))
     return False
+
+
+def _is_global_var_definition(uwl):
+    return (uwl.depth == 0
+        and uwl.tokens
+        and pytree_utils.NodeName(uwl.first.node.parent) == 'expr_stmt'
+        and uwl.first.is_name
+        and uwl.first.value.isupper()
+    )
+
+
+def _is_comment_line(uwl):
+    """ Check if a line is a comment contaning soething else apart from
+    shebang or encoding definition.
+    """
+
+    if not uwl.is_comment:
+        return False
+
+    start_lineno = uwl.lineno - uwl.first.value.count('\n')
+    total_lines = uwl.lineno - start_lineno + 1
+
+    if start_lineno == 1 and total_lines <= 2:
+        # check if the comment is shebang, or encoding, or shebabg
+        # followed by encoding
+
+        lines = uwl.first.value.split('\n')
+        if total_lines == 1:
+            return not (lines[0].startswith('#!')
+                or is_encoding_in_first_or_second_line(lines)
+            )
+        else:
+            return not (lines[0].startswith('#!')
+                and is_encoding_in_first_or_second_line(lines)
+            )
+
+    return True
+
+
+def check_if_global_vars_commented(uwlines, style, filename):
+    if not style.Get('WARN_NOT_COMMENTED_GLOBAL_VARS'):
+        return
+
+
+    prev = None
+    for uwl in uwlines:
+        if _is_global_var_definition(uwl) and not _is_comment_line(prev):
+            log_warn(WARNINGS_DESCRIPTION.get('GLOBAL_VAR_COMMENT_WARNING'),
+                uwl.lineno, uwl.first.column, os.path.basename(filename))
+        prev = uwl

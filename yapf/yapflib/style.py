@@ -379,6 +379,9 @@ _STYLE_HELP = dict(
         """),
     USE_TABS=textwrap.dedent("""\
       Use the Tab character for indentation."""),
+    WARN_NOT_COMMENTED_GLOBAL_VARS=textwrap.dedent("""\
+      Warn when a global variable definition is not accompanied by a
+      commentary"""),
     # BASED_ON_STYLE='Which predefined style this style is based on',
 )
 
@@ -444,6 +447,7 @@ def CreatePEP8Style():
       SPLIT_PENALTY_LOGICAL_OPERATOR=300,
       SPLIT_SINGLE_LINE_IMPORTS=False,
       USE_TABS=False,
+      WARN_NOT_COMMENTED_GLOBAL_VARS=False,
   )
 
 
@@ -476,6 +480,7 @@ def CreateHuaweiStyle():
   style['COLUMN_LIMIT'] = 80
   style['FORCE_LONG_LINES_WRAPPING'] = True
   style['INSERT_SPACE_AFTER_HASH_CHAR'] = True
+  style['WARN_NOT_COMMENTED_GLOBAL_VARS'] = True
   return style
 
 
@@ -644,6 +649,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     SPLIT_PENALTY_LOGICAL_OPERATOR=int,
     SPLIT_SINGLE_LINE_IMPORTS=_BoolConverter,
     USE_TABS=_BoolConverter,
+    WARN_NOT_COMMENTED_GLOBAL_VARS=_BoolConverter,
 )
 
 
