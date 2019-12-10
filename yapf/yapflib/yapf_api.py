@@ -39,6 +39,7 @@ import sys
 from lib2to3.pgen2 import parse
 
 from yapf.yapflib import blank_line_calculator
+from yapf.yapflib import comment_formatter
 from yapf.yapflib import comment_splicer
 from yapf.yapflib import continuation_splicer
 from yapf.yapflib import file_resources
@@ -153,6 +154,7 @@ def FormatCode(unformatted_source,
   _MarkLinesToFormat(uwlines, lines)
 
   uwlines = import_list_splitter.split_import_lists(uwlines)
+  uwlines = comment_formatter.format_comments(uwlines)
 
   reformatted_source = reformatter.Reformat(
       _SplitSemicolons(uwlines), filename, verify, lines)

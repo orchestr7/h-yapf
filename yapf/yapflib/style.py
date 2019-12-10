@@ -196,6 +196,8 @@ _STYLE_HELP = dict(
       The number of columns to use for indentation."""),
     INDENT_BLANK_LINES=textwrap.dedent("""\
       Indent blank lines."""),
+    INSERT_SPACE_AFTER_HASH_CHAR=textwrap.dedent("""\
+      Insert a missing space after the # char."""),
     FORCE_LONG_LINES_WRAPPING=textwrap.dedent("""\
       Enclose long lines in parentheses in order to make them wrappable:
 
@@ -408,6 +410,7 @@ def CreatePEP8Style():
       INDENT_DICTIONARY_VALUE=False,
       INDENT_WIDTH=4,
       INDENT_BLANK_LINES=False,
+      INSERT_SPACE_AFTER_HASH_CHAR=False,
       JOIN_MULTIPLE_LINES=True,
       NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=set(),
       SAVE_INITIAL_IDENTS_FORMATTING=False,
@@ -472,6 +475,7 @@ def CreateHuaweiStyle():
   style['SAVE_INITIAL_IDENTS_FORMATTING'] = False
   style['COLUMN_LIMIT'] = 80
   style['FORCE_LONG_LINES_WRAPPING'] = True
+  style['INSERT_SPACE_AFTER_HASH_CHAR'] = True
   return style
 
 
@@ -606,6 +610,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     INDENT_WIDTH=int,
     INDENT_BLANK_LINES=_BoolConverter,
     FORCE_LONG_LINES_WRAPPING=_BoolConverter,
+    INSERT_SPACE_AFTER_HASH_CHAR=_BoolConverter,
     JOIN_MULTIPLE_LINES=_BoolConverter,
     NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=_StringSetConverter,
     SAVE_INITIAL_IDENTS_FORMATTING=_BoolConverter,

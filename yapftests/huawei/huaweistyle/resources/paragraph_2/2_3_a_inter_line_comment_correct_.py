@@ -1,3 +1,10 @@
+#!/usr/bin/python3
+
 for line in file:
-    # will print line here (correct idents-level and a space after #)
-    print(line)
+    # wrong offset, no space
+    # corrent
+    print(line)  # no space
+
+# multiline
+# comment    // < wrong offset
+#    block  // < formatted line, shold be left as is
