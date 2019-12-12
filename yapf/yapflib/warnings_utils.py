@@ -4,6 +4,7 @@ Function: all logic that is related with warnins will be here
 Copyright Information: Huawei Technologies Co., Ltd. All Rights Reserved © 2010-2019
 Change History: 2019-12-02 17:27 Created
 """
+from enum import Enum, unique
 import os
 import re
 import sys
@@ -16,22 +17,28 @@ from lib2to3.pygram import python_symbols as syms
 from . import pytree_utils
 
 
-WARNINGS_DESCRIPTION = dict(
-    ENCODING_WARNING=textwrap.dedent(
+@unique
+class Warnings(Enum):
+    ENCODING = 1
+    GLOBAL_VAR_COMMENT = 2
+
+
+WARNINGS_DESCRIPTION = {
+    Warnings.ENCODING: textwrap.dedent(
         "Each source file should have encoding header on the first or second line"
         " like [# -*- coding: <encoding format> -*-] (see also: pep-0263)"),
-    GLOBAL_VAR_COMMENT_WARNING=textwrap.dedent(
+    Warnings.GLOBAL_VAR_COMMENT: textwrap.dedent(
         "Detailed comments should be added to each global variable"
     ),
-)
+}
 
 
-def log_warn(warn_msg, line_number, column_num, filename):
+def log_warn(warn, line_number, column_num, filename):
     with threading.RLock():
-        sys.stderr.write(f'WARN [filename: {filename}, '
+        sys.stderr.write(f'WARN {warn.value}: [filename: {filename}, '
                          f'line: {line_number}, '
                          f'column: {column_num}]: '
-                         f'{warn_msg}\n')
+                         f'{WARNINGS_DESCRIPTION[warn]}\n')
 
 
 encoding_regex = re.compile('^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
@@ -49,8 +56,7 @@ def check_encoding_in_header(uwlines, style, filename):
                 comments = first_token.value.split('\n')
                 if is_encoding_in_first_or_second_line(comments):
                     return
-            log_warn(WARNINGS_DESCRIPTION.get('ENCODING_WARNING'),
-                     1, 1, os.path.basename(filename))
+            log_warn(Warnings.ENCODING, 1, 1, os.path.basename(filename))
 
 
 def is_encoding_in_first_or_second_line(comments):
@@ -107,6 +113,6 @@ def check_if_global_vars_commented(uwlines, style, filename):
     prev = None
     for uwl in uwlines:
         if _is_global_var_definition(uwl) and not _is_comment_line(prev):
-            log_warn(WARNINGS_DESCRIPTION.get('GLOBAL_VAR_COMMENT_WARNING'),
+            log_warn(Warnings.GLOBAL_VAR_COMMENT,
                 uwl.lineno, uwl.first.column, os.path.basename(filename))
         prev = uwl
