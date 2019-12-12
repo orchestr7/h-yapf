@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# some comment
 
 for line in file:
     # wrong offset, no space

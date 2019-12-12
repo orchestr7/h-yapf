@@ -34,11 +34,10 @@ from yapf.yapflib import line_joiner
 from yapf.yapflib import pytree_utils
 from yapf.yapflib import style
 from yapf.yapflib import verifier
-from yapf.yapflib.warnings_utils import check_encoding_in_header, \
-  check_all_recommendations
+import yapf.yapflib.warnings_utils as warns
 
 
-def Reformat(uwlines, filename='<unknown>', verify=False, lines=None, ):
+def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
   """Reformat the unwrapped lines.
 
   Arguments:
@@ -46,7 +45,7 @@ def Reformat(uwlines, filename='<unknown>', verify=False, lines=None, ):
     verify: (bool) True if reformatted code should be verified for syntax.
     lines: (set of int) The lines which can be modified or None if there is no
       line range restriction.
-    filename: name of the file with sources for code style fixing 
+    filename: name (full path) of the source file used for code style fixing
 
   Returns:
     A string representing the reformatted code.
@@ -57,6 +56,7 @@ def Reformat(uwlines, filename='<unknown>', verify=False, lines=None, ):
 
   # special checks for a format of a header that can produce warnings
   check_all_recommendations(uwlines, style, filename)
+  warns.check_if_global_vars_commented(uwlines, style, filename)
 
   for uwline in _SingleOrMergedLines(uwlines):
     first_token = uwline.first

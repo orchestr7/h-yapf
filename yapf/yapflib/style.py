@@ -47,6 +47,12 @@ def SetGlobalStyle(style):
 
 
 _STYLE_HELP = dict(
+    AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD=textwrap.dedent("""\
+      If enabled (True) will find all imports used in code and move it right to
+      the beginning of the file. It would be added after all
+      comments/doc strings from the beginning of the file.
+      Note! It won't move indented imports from code blocks.
+    """),
     ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT=textwrap.dedent("""\
       Align closing bracket with visual indentation."""),
     ALLOW_MULTILINE_LAMBDAS=textwrap.dedent("""\
@@ -385,12 +391,16 @@ _STYLE_HELP = dict(
         """),
     USE_TABS=textwrap.dedent("""\
       Use the Tab character for indentation."""),
+    WARN_NOT_COMMENTED_GLOBAL_VARS=textwrap.dedent("""\
+      Warn when a global variable definition is not accompanied by a
+      commentary"""),
     # BASED_ON_STYLE='Which predefined style this style is based on',
 )
 
 
 def CreatePEP8Style():
   return dict(
+      AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD = False,
       ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT=True,
       ALLOW_MULTILINE_LAMBDAS=False,
       ALLOW_MULTILINE_DICTIONARY_KEYS=False,
@@ -450,7 +460,7 @@ def CreatePEP8Style():
       SPLIT_SINGLE_LINE_IMPORTS=False,
       USE_TABS=False,
 
-      # =========warnings==============
+      # =========warnings==============      WARN_NOT_COMMENTED_GLOBAL_VARS=False,
       SHOULD_HAVE_ENCODING_HEADER=False,
       SHOULD_NOT_HAVE_WILDCARD_IMPORTS=False
   )
@@ -477,6 +487,7 @@ def CreateGoogleStyle():
 
 def CreateHuaweiStyle():
   style = CreateGoogleStyle()
+  style['AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD'] = True
   style['SHOULD_HAVE_ENCODING_HEADER'] = True
   style['NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS'] = '*'
   style['SPLIT_SINGLE_LINE_IMPORTS'] = True
@@ -486,6 +497,7 @@ def CreateHuaweiStyle():
   style['FORCE_LONG_LINES_WRAPPING'] = True
   style['INSERT_SPACE_AFTER_HASH_CHAR'] = True
   style['SHOULD_NOT_HAVE_WILDCARD_IMPORTS'] = True
+  style['WARN_NOT_COMMENTED_GLOBAL_VARS'] = True
   return style
 
 
@@ -595,6 +607,7 @@ def _IntOrIntListConverter(s):
 #
 # Note: this dict has to map all the supported style options.
 _STYLE_OPTION_VALUE_CONVERTER = dict(
+    AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD=_BoolConverter,
     ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT=_BoolConverter,
     ALLOW_MULTILINE_LAMBDAS=_BoolConverter,
     ALLOW_MULTILINE_DICTIONARY_KEYS=_BoolConverter,
@@ -655,6 +668,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     SPLIT_PENALTY_LOGICAL_OPERATOR=int,
     SPLIT_SINGLE_LINE_IMPORTS=_BoolConverter,
     USE_TABS=_BoolConverter,
+    WARN_NOT_COMMENTED_GLOBAL_VARS=_BoolConverter,
 )
 
 

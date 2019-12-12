@@ -392,3 +392,11 @@ class FormatToken(object):
   def is_pytype_comment(self):
     return self.is_comment and re.match(r'#.*\bpytype:\s*(disable|enable)=',
                                         self.value)
+
+  @property
+  def is_import_keyword(self):
+    return self.is_keyword and 'import' == self.value
+
+  @property
+  def is_comment_or_doc_string(self):
+    return self.is_comment or self.is_docstring
