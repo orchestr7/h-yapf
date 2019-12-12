@@ -225,6 +225,12 @@ _STYLE_HELP = dict(
     SPACE_BETWEEN_ENDING_COMMA_AND_CLOSING_BRACKET=textwrap.dedent("""\
       Insert a space between the ending comma and closing bracket of a list,
       etc."""),
+    SHOULD_HAVE_ENCODING_HEADER=textwrap.dedent("""\
+      This option will enable warning that forces to use encoding in the
+       beginning of the file"""),
+    SHOULD_NOT_HAVE_WILDCARD_IMPORTS=textwrap.dedent("""\
+      This option will enable warning that forces not to use wildcard imports
+      (from module import *)"""),
     SPACES_AROUND_POWER_OPERATOR=textwrap.dedent("""\
       Use spaces around the power operator."""),
     SPACES_AROUND_DEFAULT_OR_NAMED_ASSIGN=textwrap.dedent("""\
@@ -418,7 +424,6 @@ def CreatePEP8Style():
       SPACES_AROUND_POWER_OPERATOR=False,
       SPACES_AROUND_DEFAULT_OR_NAMED_ASSIGN=False,
       SPACES_BEFORE_COMMENT=2,
-      SHOULD_HAVE_ENCODING_HEADER=False,
       SPLIT_ARGUMENTS_WHEN_COMMA_TERMINATED=False,
       SPLIT_ALL_COMMA_SEPARATED_VALUES=False,
       SPLIT_ALL_TOP_LEVEL_COMMA_SEPARATED_VALUES=False,
@@ -444,6 +449,10 @@ def CreatePEP8Style():
       SPLIT_PENALTY_LOGICAL_OPERATOR=300,
       SPLIT_SINGLE_LINE_IMPORTS=False,
       USE_TABS=False,
+
+      # =========warnings==============
+      SHOULD_HAVE_ENCODING_HEADER=False,
+      SHOULD_NOT_HAVE_WILDCARD_IMPORTS=False
   )
 
 
@@ -476,6 +485,7 @@ def CreateHuaweiStyle():
   style['COLUMN_LIMIT'] = 80
   style['FORCE_LONG_LINES_WRAPPING'] = True
   style['INSERT_SPACE_AFTER_HASH_CHAR'] = True
+  style['SHOULD_NOT_HAVE_WILDCARD_IMPORTS'] = True
   return style
 
 
@@ -615,6 +625,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=_StringSetConverter,
     SAVE_INITIAL_IDENTS_FORMATTING=_BoolConverter,
     SHOULD_HAVE_ENCODING_HEADER=_BoolConverter,
+    SHOULD_NOT_HAVE_WILDCARD_IMPORTS=_BoolConverter,
     SPACE_BETWEEN_ENDING_COMMA_AND_CLOSING_BRACKET=_BoolConverter,
     SPACES_AROUND_POWER_OPERATOR=_BoolConverter,
     SPACES_AROUND_DEFAULT_OR_NAMED_ASSIGN=_BoolConverter,

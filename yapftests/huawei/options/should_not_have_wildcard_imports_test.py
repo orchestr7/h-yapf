@@ -31,8 +31,10 @@ class RunMainTest(yapf_test_helper.YAPFTest):
                                         f"{option}: "
                                         f"{positive_case}}}"))
         unformatted_code = textwrap.dedent("""\
+                        # -*- coding: utf-8 -*-
                         import some_module
                         # some comment                       
+                        from module import *
                         """)
 
         uwlines = yapf_test_helper.ParseAndUnwrap(unformatted_code)
@@ -42,15 +44,14 @@ class RunMainTest(yapf_test_helper.YAPFTest):
 
     def test_positive_case(self):
         formatted_code = textwrap.dedent("""\
-                        WARN [filename: test_file, line: 1, column: 1]: Each 
-                        source file should have encoding header on the first 
-                        or second line like [# -*- coding: <encoding format> 
-                        -*-] (see also: pep-0263)
-                        """).replace('\n', '') + '\n'
-        self.__check_test('True', formatted_code, 'should_have_encoding_header')
-        pass
+                        WARN [filename: test_file, line: 4, column: 19]: 
+                        Using of wildcard imports (import *) is a bad style in 
+                        python, it makes code less readable and can cause 
+                        potential code issues""").replace('\n', '') + '\n'
+        self.__check_test('True', formatted_code,
+                          'should_not_have_wildcard_imports')
 
     def test_negative_case(self):
         formatted_code = textwrap.dedent('')
         self.__check_test('False', formatted_code,
-                          'should_have_encoding_header')
+                          'should_not_have_wildcard_imports')
