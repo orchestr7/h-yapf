@@ -5,8 +5,6 @@ Copyright Information: Huawei Technologies Co., Ltd. All Rights Reserved © 2010
 Change History: 2019-12-10 Created
 """
 
-import re
-
 from . import style
 
 
@@ -20,18 +18,22 @@ def format_comments(uwlines):
         if uwl.disable:
             continue
 
-        # leave shebang as it is
-        if (uwl.lineno == 1
-            and uwl.tokens
-            and uwl.first.value.startswith('#!')):
-            continue
-
         for tok in uwl.tokens:
             if tok.is_comment:
-                tok.value = _format_comment(tok.value)
+                tok.value = _format_comment(tok)
 
     return uwlines
 
 
-def _format_comment(text):
-    return re.sub(r'(^|\n)#([^\s])', r'\1# \2', text)
+def _format_comment(tok):
+    lines = tok.value.split('\n')
+    start_lineno = tok.lineno - len(lines) + 1
+
+    for i in range(len(lines)):
+        lineno = start_lineno + i
+        if lineno == 1 and lines[i].startswith('#!'):
+            continue
+        if not lines[i].startswith('# '):
+            lines[i] = '# ' + lines[i][1:]
+
+    return '\n'.join(lines)
