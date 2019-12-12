@@ -67,10 +67,15 @@ class RunMainTest(yapf_test_helper.YAPFTest):
 
     def setUpSubtest(self):
         class RedirectedStdErr:
-            get = ''
+            def __init__(self):
+                self.__messages = []
+
+            @property
+            def get(self):
+                return ''.join(self.__messages)
 
             def write(self, redirect_str):
-                self.get = redirect_str
+                self.__messages.append(redirect_str)
 
         self.__prev_state = sys.stderr
         sys.stderr = RedirectedStdErr()
