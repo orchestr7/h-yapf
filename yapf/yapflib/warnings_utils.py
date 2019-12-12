@@ -47,8 +47,8 @@ def check_encoding_in_header(uwlines, style, filename):
 
 def is_encoding_in_first_or_second_line(comments):
     if len(comments) == 1:
-        return encoding_regex.match(comments[0])
+        return bool(encoding_regex.match(comments[0]))
     if len(comments) == 2:
-        return (encoding_regex.match(comments[0]) or
+        return bool(encoding_regex.match(comments[0]) or
                 encoding_regex.match(comments[1]))
     return False
