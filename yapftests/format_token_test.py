@@ -83,6 +83,13 @@ class FormatTokenTest(unittest.TestCase):
     tok = format_token.FormatToken(pytree.Leaf(token.STRING, 'r"""hello"""'))
     self.assertTrue(tok.is_multiline_string)
 
+  def testIsImportStatement(self):
+    tok = format_token.FormatToken(pytree.Leaf(token.NAME, 'import'))
+    self.assertTrue(tok.is_import_keyword)
+
+    tok = format_token.FormatToken(pytree.Leaf(token.STRING, "'import'"))
+    self.assertFalse(tok.is_import_keyword)
+
 
 if __name__ == '__main__':
   unittest.main()
