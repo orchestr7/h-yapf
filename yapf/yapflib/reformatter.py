@@ -55,7 +55,7 @@ def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
   indent_width = style.Get('INDENT_WIDTH')
 
   # special checks for a format of a header that can produce warnings
-  check_all_recommendations(uwlines, style, filename)
+  warns.check_all_recommendations(uwlines, style, filename)
   warns.check_if_global_vars_commented(uwlines, style, filename)
 
   for uwline in _SingleOrMergedLines(uwlines):
