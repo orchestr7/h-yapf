@@ -3,5 +3,5 @@
 # -*- coding: utf-8 -*-
 
 
-def a():
+def fn():
     print('a')

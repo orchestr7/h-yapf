@@ -18,7 +18,7 @@ class RunMainTest(yapf_test_helper.YAPFTest):
                                         f"save_initial_idents_formatting: "
                                         f"{pos_case}}}"))
         unformatted_code = textwrap.dedent("""\
-                        def f():
+                        def fn():
                                 if True:
                                  if True:
                                     if True:
@@ -31,7 +31,7 @@ class RunMainTest(yapf_test_helper.YAPFTest):
 
     def test_positive_case(self):
         formatted_code = textwrap.dedent("""\
-                        def f():
+                        def fn():
                                 if True:
                                  if True:
                                     if True:
@@ -41,7 +41,7 @@ class RunMainTest(yapf_test_helper.YAPFTest):
 
     def test_negative_case(self):
         formatted_code = textwrap.dedent("""\
-                        def f():
+                        def fn():
                             if True:
                                 if True:
                                     if True:

@@ -21,6 +21,7 @@ class Warnings(Enum):
     GLOBAL_VAR_COMMENT = 2
     WILDCARD_IMPORT = 3
     CLASS_NAMING_STYLE = 4
+    FUNC_NAMING_STYLE = 5
 
 
 WARNINGS_DESCRIPTION = {
@@ -29,6 +30,8 @@ WARNINGS_DESCRIPTION = {
     Warnings.ENCODING: textwrap.dedent(
         "Each source file should have encoding header on the first or second "
         "line like [# -*- coding: <encoding format> -*-] (see also: pep-0263)"),
+    Warnings.FUNC_NAMING_STYLE: textwrap.dedent(
+        "Invalid function name"),
     Warnings.GLOBAL_VAR_COMMENT: textwrap.dedent(
         "Global variable {variable} has missing detailed comment for it"
     ),
@@ -46,10 +49,22 @@ def log_warn(warn, line_number, column_num, filename, **msg):
                      f'{WARNINGS_DESCRIPTION[warn]}\n'.format(**msg))
 
 
+# Describes naming style rules, such as
+#    PascalCase
+#    camelCase
+#    snake_case
+#
 NAMING_STYLE_REGEXPS = dict(
-    PASCALCASE = re.compile(r'[A-Z_][a-zA-Z0-9]*$'),  # PascalCase
-    CAMELCASE = re.compile(r'[a-z_][a-zA-Z0-9]*$'),   # camelCase
-    SNAKECASE = re.compile(r'[a-z_][a-z0-9_]*$'),     # snake_case
+    classname = dict(
+        PASCALCASE = re.compile(r'[A-Z_][a-zA-Z0-9]+$'),
+        CAMELCASE = re.compile(r'[a-z_][a-zA-Z0-9]+$'),
+        SNAKECASE = re.compile(r'[a-z_][a-z0-9_]+$'),
+    ),
+    funcname = dict(
+        PASCALCASE = re.compile(r'((_{0,2}[A-Z][a-zA-Z0-9]+)|(__.*__))$'),
+        CAMELCASE = re.compile(r'((_{0,2}[a-z][a-zA-Z0-9]+)|(__.*__))$'),
+        SNAKECASE = re.compile(r'((_{0,2}[a-z][a-z0-9_]+)|(__.*__))$'),
+    ),
 )
 
 
@@ -65,6 +80,7 @@ def check_all_recommendations(uwlines, style, filename):
         warn_wildcard_imports(line, style, filename)
         warn_if_global_vars_not_commented(line, prev_line, style, filename)
         warn_class_naming_style(line, prev_line, style, filename)
+        warn_func_naming_style(line, prev_line, style, filename)
         prev_line = line
 
 
@@ -199,9 +215,35 @@ def warn_class_naming_style(line, prev_line, style, filename):
         return tok.value
 
     if is_class_definition(line):
-        naming_style = NAMING_STYLE_REGEXPS[naming_style_name]
+        naming_style = NAMING_STYLE_REGEXPS['classname'][naming_style_name]
 
         classname = get_classname(line)
         if not naming_style.match(classname):
             log_warn(Warnings.CLASS_NAMING_STYLE,
+                     line.lineno, line.first.column, os.path.basename(filename))
+
+
+def warn_func_naming_style(line, prev_line, style, filename):
+    """ Check if function (member or not) names fit the naming rule."""
+
+    naming_style_name = style.Get('CHECK_FUNC_NAMING_STYLE')
+    if not naming_style_name:
+        return
+
+    def is_func_definition(uwl):
+        return (uwl.tokens
+                and uwl.first.is_keyword
+                and uwl.first.value == 'def'
+                )
+
+    def get_funcname(uwl):
+        tok = next(filter(lambda t: t.name == 'NAME', uwl.tokens[1:]))
+        return tok.value
+
+    if is_func_definition(line):
+        naming_style = NAMING_STYLE_REGEXPS['funcname'][naming_style_name]
+
+        funcname = get_funcname(line)
+        if not naming_style.match(funcname):
+            log_warn(Warnings.FUNC_NAMING_STYLE,
                      line.lineno, line.first.column, os.path.basename(filename))

@@ -111,6 +111,8 @@ _STYLE_HELP = dict(
       Warn when class definitions do not fit a given naming convention.
       It can be set to one of 'PascalCase', 'camelCase', 'snake_case', or None.
       In the last case this check is disabled."""),
+    CHECK_FUNC_NAMING_STYLE=textwrap.dedent("""\
+      Warn when function definitions do not fit a given naming convention.
       It can be set to one of 'PascalCase', 'camelCase', 'snake_case', or None.
       In the last case this check is disabled."""),
     COALESCE_BRACKETS=textwrap.dedent("""\
@@ -419,6 +421,7 @@ def CreatePEP8Style():
       BLANK_LINES_AROUND_TOP_LEVEL_DEFINITION=2,
       BLANK_LINES_AFTER_INDENTED_BLOCKS=False,
       CHECK_CLASS_NAMING_STYLE=None,
+      CHECK_FUNC_NAMING_STYLE=None,
       COALESCE_BRACKETS=False,
       COLUMN_LIMIT=79,
       CONTINUATION_ALIGN_STYLE='SPACE',
@@ -507,6 +510,7 @@ def CreateHuaweiStyle():
   style['WARN_NOT_COMMENTED_GLOBAL_VARS'] = True
   style['FIX_SHEBANG_HEADER'] = True
   style['CHECK_CLASS_NAMING_STYLE'] = 'PASCALCASE'
+  style['CHECK_FUNC_NAMING_STYLE'] = 'SNAKECASE'
   return style
 
 
@@ -642,6 +646,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     BLANK_LINE_BEFORE_MODULE_DOCSTRING=_BoolConverter,
     BLANK_LINES_AROUND_TOP_LEVEL_DEFINITION=int,
     CHECK_CLASS_NAMING_STYLE=_NamingStyleStringConverter,
+    CHECK_FUNC_NAMING_STYLE=_NamingStyleStringConverter,
     COALESCE_BRACKETS=_BoolConverter,
     COLUMN_LIMIT=int,
     CONTINUATION_ALIGN_STYLE=_ContinuationAlignStyleStringConverter,
