@@ -59,7 +59,6 @@ def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
   warns.check_all_recommendations(uwlines, style, filename)
   fix_shebang_comment_header(uwlines, style)
 
-
   for uwline in _SingleOrMergedLines(uwlines):
     first_token = uwline.first
     _FormatFirstToken(first_token, uwline.depth, prev_uwline, final_lines)

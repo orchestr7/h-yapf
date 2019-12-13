@@ -107,6 +107,12 @@ _STYLE_HELP = dict(
       definitions."""),
     BLANK_LINES_AFTER_INDENTED_BLOCKS=textwrap.dedent("""\
       Insert a blank line after each and every indented objects."""),
+    CHECK_CLASS_NAMING_STYLE=textwrap.dedent("""\
+      Warn when class definitions do not fit a given naming convention.
+      It can be set to one of 'PascalCase', 'camelCase', 'snake_case', or None.
+      In the last case this check is disabled."""),
+      It can be set to one of 'PascalCase', 'camelCase', 'snake_case', or None.
+      In the last case this check is disabled."""),
     COALESCE_BRACKETS=textwrap.dedent("""\
       Do not split consecutive brackets. Only relevant when
       dedent_closing_brackets is set. For example:
@@ -412,6 +418,7 @@ def CreatePEP8Style():
       BLANK_LINE_BEFORE_MODULE_DOCSTRING=False,
       BLANK_LINES_AROUND_TOP_LEVEL_DEFINITION=2,
       BLANK_LINES_AFTER_INDENTED_BLOCKS=False,
+      CHECK_CLASS_NAMING_STYLE=None,
       COALESCE_BRACKETS=False,
       COLUMN_LIMIT=79,
       CONTINUATION_ALIGN_STYLE='SPACE',
@@ -460,8 +467,6 @@ def CreatePEP8Style():
       SPLIT_PENALTY_LOGICAL_OPERATOR=300,
       SPLIT_SINGLE_LINE_IMPORTS=False,
       USE_TABS=False,
-
-      # =========warnings==============
       SHOULD_HAVE_ENCODING_HEADER=False,
       SHOULD_NOT_HAVE_WILDCARD_IMPORTS=False,
       WARN_NOT_COMMENTED_GLOBAL_VARS=False,
@@ -501,6 +506,7 @@ def CreateHuaweiStyle():
   style['SHOULD_NOT_HAVE_WILDCARD_IMPORTS'] = True
   style['WARN_NOT_COMMENTED_GLOBAL_VARS'] = True
   style['FIX_SHEBANG_HEADER'] = True
+  style['CHECK_CLASS_NAMING_STYLE'] = 'PASCALCASE'
   return style
 
 
@@ -602,6 +608,19 @@ def _IntOrIntListConverter(s):
   return _IntListConverter(s) if ',' in s else int(s)
 
 
+def _NamingStyleStringConverter(s):
+    accepted_styles = {'PASCALCASE', 'CAMELCASE', 'SNAKECASE'}
+
+    if s:
+        s = s.strip('"\'').replace('_', '').replace('-', '').upper()
+
+        if s not in accepted_styles:
+            raise ValueError('unknown naming style: %s' % s)
+        return s
+
+    return None
+
+
 # Different style options need to have their values interpreted differently when
 # read from the config file. This dict maps an option name to a "converter"
 # function that accepts the string read for the option's value from the file and
@@ -622,6 +641,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     BLANK_LINE_BEFORE_CLASS_DOCSTRING=_BoolConverter,
     BLANK_LINE_BEFORE_MODULE_DOCSTRING=_BoolConverter,
     BLANK_LINES_AROUND_TOP_LEVEL_DEFINITION=int,
+    CHECK_CLASS_NAMING_STYLE=_NamingStyleStringConverter,
     COALESCE_BRACKETS=_BoolConverter,
     COLUMN_LIMIT=int,
     CONTINUATION_ALIGN_STYLE=_ContinuationAlignStyleStringConverter,

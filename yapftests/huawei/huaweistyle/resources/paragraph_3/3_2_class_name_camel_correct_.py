@@ -1,2 +1,0 @@
-class SimpleClass(object):
-    pass

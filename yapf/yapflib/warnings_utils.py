@@ -20,9 +20,12 @@ class Warnings(Enum):
     ENCODING = 1
     GLOBAL_VAR_COMMENT = 2
     WILDCARD_IMPORT = 3
+    CLASS_NAMING_STYLE = 4
 
 
 WARNINGS_DESCRIPTION = {
+    Warnings.CLASS_NAMING_STYLE: textwrap.dedent(
+        "Invalid class name"),
     Warnings.ENCODING: textwrap.dedent(
         "Each source file should have encoding header on the first or second "
         "line like [# -*- coding: <encoding format> -*-] (see also: pep-0263)"),
@@ -43,6 +46,16 @@ def log_warn(warn, line_number, column_num, filename, **msg):
                      f'{WARNINGS_DESCRIPTION[warn]}\n'.format(**msg))
 
 
+NAMING_STYLE_REGEXPS = dict(
+    PASCALCASE = re.compile(r'[A-Z_][a-zA-Z0-9]*$'),  # PascalCase
+    CAMELCASE = re.compile(r'[a-z_][a-zA-Z0-9]*$'),   # camelCase
+    SNAKECASE = re.compile(r'[a-z_][a-z0-9_]*$'),     # snake_case
+)
+
+
+encoding_regex = re.compile('^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
+
+
 def check_all_recommendations(uwlines, style, filename):
     # FixMe: will need to reduce the number of usages of this method when chosen
     # FixME: style does not need these warnings (affecting performance)
@@ -51,6 +64,7 @@ def check_all_recommendations(uwlines, style, filename):
     for line in uwlines:
         warn_wildcard_imports(line, style, filename)
         warn_if_global_vars_not_commented(line, prev_line, style, filename)
+        warn_class_naming_style(line, prev_line, style, filename)
         prev_line = line
 
 
@@ -165,3 +179,29 @@ def get_str_with_encoding(comments_str, lineno):
         filter(is_comment_with_encoding, (comments_str.split('\n'), lineno)),
         None
     )
+
+
+def warn_class_naming_style(line, prev_line, style, filename):
+    """ Check if class names fit the naming rule."""
+
+    naming_style_name = style.Get('CHECK_CLASS_NAMING_STYLE')
+    if not naming_style_name:
+        return
+
+    def is_class_definition(uwl):
+        return (uwl.tokens
+                and uwl.first.is_keyword
+                and uwl.first.value == 'class'
+                )
+
+    def get_classname(uwl):
+        tok = next(filter(lambda t: t.name == 'NAME', uwl.tokens[1:]))
+        return tok.value
+
+    if is_class_definition(line):
+        naming_style = NAMING_STYLE_REGEXPS[naming_style_name]
+
+        classname = get_classname(line)
+        if not naming_style.match(classname):
+            log_warn(Warnings.CLASS_NAMING_STYLE,
+                     line.lineno, line.first.column, os.path.basename(filename))
