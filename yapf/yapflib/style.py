@@ -420,6 +420,7 @@ def CreatePEP8Style():
       INDENT_CLOSING_BRACKETS=False,
       DISABLE_ENDING_COMMA_HEURISTIC=False,
       EACH_DICT_ENTRY_ON_SEPARATE_LINE=True,
+      FIX_SHEBANG_HEADER=False,
       FORCE_LONG_LINES_WRAPPING=False,
       I18N_COMMENT='',
       I18N_FUNCTION_CALL='',
@@ -460,9 +461,10 @@ def CreatePEP8Style():
       SPLIT_SINGLE_LINE_IMPORTS=False,
       USE_TABS=False,
 
-      # =========warnings==============      WARN_NOT_COMMENTED_GLOBAL_VARS=False,
+      # =========warnings==============
       SHOULD_HAVE_ENCODING_HEADER=False,
-      SHOULD_NOT_HAVE_WILDCARD_IMPORTS=False
+      SHOULD_NOT_HAVE_WILDCARD_IMPORTS=False,
+      WARN_NOT_COMMENTED_GLOBAL_VARS=False,
   )
 
 
@@ -498,6 +500,7 @@ def CreateHuaweiStyle():
   style['INSERT_SPACE_AFTER_HASH_CHAR'] = True
   style['SHOULD_NOT_HAVE_WILDCARD_IMPORTS'] = True
   style['WARN_NOT_COMMENTED_GLOBAL_VARS'] = True
+  style['FIX_SHEBANG_HEADER'] = True
   return style
 
 
@@ -637,6 +640,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     JOIN_MULTIPLE_LINES=_BoolConverter,
     NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=_StringSetConverter,
     SAVE_INITIAL_IDENTS_FORMATTING=_BoolConverter,
+    FIX_SHEBANG_HEADER=_BoolConverter,
     SHOULD_HAVE_ENCODING_HEADER=_BoolConverter,
     SHOULD_NOT_HAVE_WILDCARD_IMPORTS=_BoolConverter,
     SPACE_BETWEEN_ENDING_COMMA_AND_CLOSING_BRACKET=_BoolConverter,

@@ -17,7 +17,7 @@ class RunMainTest(yapf_test_helper.YAPFTest):
             get = ''
 
             def write(self, redirect_str):
-                self.get = redirect_str
+                self.get += redirect_str
 
         self.__prev_state = sys.stderr
         sys.stderr = RedirectedStdErr()
@@ -31,6 +31,7 @@ class RunMainTest(yapf_test_helper.YAPFTest):
                                         f"{option}: "
                                         f"{positive_case}}}"))
         unformatted_code = textwrap.dedent("""\
+                        #!/usr/bin/env python
                         import some_module
                         # some comment                       
                         """)
@@ -42,14 +43,15 @@ class RunMainTest(yapf_test_helper.YAPFTest):
 
     def test_positive_case(self):
         formatted_code = textwrap.dedent("""\
-                        WARN [filename: test_file, line: 1, column: 1]: Each 
-                        source file should have encoding header on the first 
-                        or second line like [# -*- coding: <encoding format> 
-                        -*-] (see also: pep-0263)
-                        """).replace('\n', '') + '\n'
+            WARN 1: [filename: test_file, line: 1, column: 1]: Each source file 
+            should have encoding header on the first or second line like [# -*- 
+            coding: <encoding format> -*-] (see also: pep-0263)
+             """).replace('\n', '') + '\n'
+
         self.__check_test('True', formatted_code, 'should_have_encoding_header')
 
     def test_negative_case(self):
-        formatted_code = textwrap.dedent('')
+        formatted_code = ''
+
         self.__check_test('False', formatted_code,
                           'should_have_encoding_header')

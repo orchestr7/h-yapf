@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!    /usr/bin/python  var     param
 # -*- coding: utf-8 -*-
 
 

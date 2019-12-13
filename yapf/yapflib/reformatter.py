@@ -35,6 +35,7 @@ from yapf.yapflib import pytree_utils
 from yapf.yapflib import style
 from yapf.yapflib import verifier
 import yapf.yapflib.warnings_utils as warns
+from yapf.yapflib.fixers.fix_shebang_comment import fix_shebang_comment_header
 
 
 def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
@@ -56,7 +57,8 @@ def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
 
   # special checks for a format of a header that can produce warnings
   warns.check_all_recommendations(uwlines, style, filename)
-  warns.check_if_global_vars_commented(uwlines, style, filename)
+  fix_shebang_comment_header(uwlines, style)
+
 
   for uwline in _SingleOrMergedLines(uwlines):
     first_token = uwline.first

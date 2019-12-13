@@ -27,54 +27,45 @@ WARNINGS_DESCRIPTION = {
         "Each source file should have encoding header on the first or second "
         "line like [# -*- coding: <encoding format> -*-] (see also: pep-0263)"),
     Warnings.GLOBAL_VAR_COMMENT: textwrap.dedent(
-        "Detailed comments should be added to each global variable"
+        "Global variable {variable} has missing detailed comment for it"
     ),
     Warnings.WILDCARD_IMPORT: textwrap.dedent(
         "Using of wildcard imports (import *) is a bad style in python, "
         "it makes code less readable and can cause potential code issues"
-    ),
+    )
 }
 
 
-def log_warn(warn, line_number, column_num, filename):
+def log_warn(warn, line_number, column_num, filename, **msg):
     sys.stderr.write(f'WARN {warn.value}: [filename: {filename}, '
                      f'line: {line_number}, '
                      f'column: {column_num}]: '
-                     f'{WARNINGS_DESCRIPTION[warn]}\n')
-
-
-encoding_regex = re.compile('^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
+                     f'{WARNINGS_DESCRIPTION[warn]}\n'.format(**msg))
 
 
 def check_all_recommendations(uwlines, style, filename):
-    check_encoding_in_header(uwlines, style, filename)
+    # FixMe: will need to reduce the number of usages of this method when chosen
+    # FixME: style does not need these warnings (affecting performance)
+    check_first_lines(uwlines, style, filename)
+    prev_line = None
     for line in uwlines:
-        check_wildcard_imports(line, style, filename)
+        warn_wildcard_imports(line, style, filename)
+        warn_if_global_vars_not_commented(line, prev_line, style, filename)
+        prev_line = line
 
 
-# will check if header contains encoding declaration in 1st or 2nd line
-# WARN: ENCODING_WARNING
-# Control option: SHOULD_HAVE_ENCODING_HEADER
-def check_encoding_in_header(uwlines, style, filename):
-    if not style.Get('SHOULD_HAVE_ENCODING_HEADER'):
-        return
-
+def check_first_lines(uwlines, style, filename):
     if len(uwlines) >= 1:
         first_line = uwlines[0]
         first_token = first_line.tokens[0]
-        if first_token.is_comment:
-            all_comments = first_token.value.split('\n')
-            if is_comment_with_encoding(all_comments,
-                                        first_token.node.lineno):
-                return
-        log_warn(Warnings.ENCODING,
-                 1, 1, os.path.basename(filename))
+
+        warn_if_no_encoding(first_token, style, filename)
 
 
-# will wildcard imports should not be used in code
+# wildcard imports should not be used in code
 # WARN: WILDCARD_IMPORT
 # Control option: SHOULD_HAVE_ENCODING_HEADER
-def check_wildcard_imports(line, style, filename):
+def warn_wildcard_imports(line, style, filename):
     if not style.Get('SHOULD_NOT_HAVE_WILDCARD_IMPORTS'):
         return
 
@@ -86,9 +77,29 @@ def check_wildcard_imports(line, style, filename):
             break
 
 
+encoding_regex = re.compile('^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
+
+
+# will check if header contains encoding declaration in 1st or 2nd line
+# WARN: ENCODING_WARNING
+# Control option: SHOULD_HAVE_ENCODING_HEADER
+def warn_if_no_encoding(first_token, style, filename):
+    if style.Get('SHOULD_HAVE_ENCODING_HEADER'):
+        if first_token.is_comment:
+            all_comments = first_token.value.split('\n')
+            if is_comment_with_encoding(all_comments, first_token.lineno):
+                return
+
+        log_warn(Warnings.ENCODING,
+                 first_token.lineno, 1, os.path.basename(filename))
+
+
+def empty_newlines_in_the_beginning(lineno, comments):
+    return lineno > len(comments)
+
+
 def is_comment_with_encoding(comments, lineno):
-    # in case we have extra spaces in the beginning of the file -
-    if lineno > len(comments):
+    if empty_newlines_in_the_beginning(lineno, comments):
         return False
 
     # comments - is a list of spitted comment-lines by '\n'
@@ -139,19 +150,18 @@ def _is_comment_line(uwl):
     return True
 
 
-def check_if_global_vars_commented(uwlines, style, filename):
+def warn_if_global_vars_not_commented(uwl, prev, style, filename):
     if not style.Get('WARN_NOT_COMMENTED_GLOBAL_VARS'):
         return
 
-    prev = None
-    for uwl in uwlines:
-        if _is_global_var_definition(uwl) and not _is_comment_line(prev):
-            log_warn(Warnings.GLOBAL_VAR_COMMENT,
-                     uwl.lineno, uwl.first.column, os.path.basename(filename))
-        prev = uwl
+    if _is_global_var_definition(uwl) and not _is_comment_line(prev):
+        log_warn(Warnings.GLOBAL_VAR_COMMENT,
+                 uwl.lineno, uwl.first.column, os.path.basename(filename),
+                 variable=uwl.first.value)
 
 
 def get_str_with_encoding(comments_str, lineno):
     return next(
-        filter(is_comment_with_encoding, (comments_str.split('\n'), lineno)), None
+        filter(is_comment_with_encoding, (comments_str.split('\n'), lineno)),
+        None
     )
