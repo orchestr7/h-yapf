@@ -184,7 +184,8 @@ def warn_if_global_vars_not_commented(uwl, prev, style, filename):
     if not style.Get('WARN_NOT_COMMENTED_GLOBAL_VARS'):
         return
 
-    if _is_global_var_definition(uwl) and not _is_comment_line(prev):
+    if (_is_global_var_definition(uwl)
+        and (prev is None or not _is_comment_line(prev))):
         log_warn(Warnings.GLOBAL_VAR_COMMENT,
                  uwl.lineno, uwl.first.column, os.path.basename(filename),
                  variable=uwl.first.value)

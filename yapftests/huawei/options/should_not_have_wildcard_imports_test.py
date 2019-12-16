@@ -9,22 +9,10 @@ import textwrap
 
 from yapf.yapflib import style, reformatter
 from yapftests import yapf_test_helper
+from yapftests.huawei.options import testbase
 
 
-class RunMainTest(yapf_test_helper.YAPFTest):
-    def setUp(self):
-        class RedirectedStdErr:
-            get = ''
-
-            def write(self, redirect_str):
-                self.get += redirect_str
-
-        self.__prev_state = sys.stderr
-        sys.stderr = RedirectedStdErr()
-
-    def tearDown(self):
-        sys.stderr = self.__prev_state
-
+class RunMainTest(testbase.WarnTestBase):
     def __check_test(self, positive_case, formatted_code, option):
         style.SetGlobalStyle(
             style.CreateStyleFromConfig(f"{{based_on_style: huawei "
