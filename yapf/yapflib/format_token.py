@@ -394,9 +394,5 @@ class FormatToken(object):
                                         self.value)
 
   @property
-  def is_import_keyword(self):
-    return self.is_keyword and 'import' == self.value
-
-  @property
   def is_comment_or_doc_string(self):
     return self.is_comment or self.is_docstring
