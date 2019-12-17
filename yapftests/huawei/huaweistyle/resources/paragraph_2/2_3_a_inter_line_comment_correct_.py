@@ -9,3 +9,4 @@ for line in file:
 # multiline
 # comment    // < wrong offset
 #    block  // < formatted line, shold be left as is
+#

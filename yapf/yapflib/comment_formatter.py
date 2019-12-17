@@ -33,6 +33,8 @@ def _format_comment(tok):
         lineno = start_lineno + i
         if lineno == 1 and lines[i].startswith('#!'):
             continue
+        if lines[i].strip() == '#':
+            continue
         if not lines[i].startswith('# '):
             lines[i] = '# ' + lines[i][1:]
 
