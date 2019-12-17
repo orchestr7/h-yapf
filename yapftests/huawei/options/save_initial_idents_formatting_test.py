@@ -14,7 +14,7 @@ from yapftests import yapf_test_helper
 class RunMainTest(yapf_test_helper.YAPFTest):
     def __check_test(self, pos_case, formatted_code):
         style.SetGlobalStyle(
-            style.CreateStyleFromConfig(f"{{based_on_style: huawei "
+            style.CreateStyleFromConfig(f"{{based_on_style: pep8 "
                                         f"save_initial_idents_formatting: "
                                         f"{pos_case}}}"))
         unformatted_code = textwrap.dedent("""\

@@ -16,7 +16,7 @@ from yapftests import yapf_test_helper
 class RunMainTest(yapf_test_helper.YAPFTest):
     def __check_test(self, pos_case, formatted_code):
         style.SetGlobalStyle(
-            style.CreateStyleFromConfig(f"{{based_on_style: huawei "
+            style.CreateStyleFromConfig(f"{{based_on_style: pep8 "
                                         f"aggressively_move_all_imports_to"
                                         f"_head: "
                                         f"{pos_case}}}"))
