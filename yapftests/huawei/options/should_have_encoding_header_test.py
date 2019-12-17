@@ -31,7 +31,7 @@ class RunMainTest(testbase.WarnTestBase):
 
     def test_positive_case(self):
         formatted_code = textwrap.dedent("""\
-            WARN 1: [filename: test_file, line: 1, column: 1]: Each source file 
+            WARN 1: [filename: test_file, line: 1]: Each source file 
             should have encoding header on the first or second line like [# -*- 
             coding: <encoding format> -*-] (see also: pep-0263)
              """).replace('\n', '') + '\n'

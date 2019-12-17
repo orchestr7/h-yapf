@@ -22,6 +22,7 @@ as a string.
 
 from __future__ import unicode_literals
 import collections
+import itertools
 import heapq
 import re
 
@@ -57,7 +58,7 @@ def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
   indent_width = style.Get('INDENT_WIDTH')
 
   # special checks for a format of a header that can produce warnings
-  warns.check_all_recommendations(uwlines, style, filename)
+  messages = warns.check_all_recommendations(uwlines, style, filename)
   fix_shebang_comment_header(uwlines, style)
   format_doc_string(uwlines, style)
 
@@ -113,7 +114,12 @@ def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
     prev_uwline = uwline
 
   _AlignTrailingComments(final_lines)
-  return _FormatFinalLines(final_lines, verify)
+  formatted_lines = _FormatFinalLines(final_lines)
+
+  _UpdateWarnLocations(formatted_lines, messages)
+  messages.show()
+
+  return _ToText(formatted_lines, verify)
 
 
 def _RetainHorizontalSpacing(uwline):
@@ -406,27 +412,56 @@ def _AlignTrailingComments(final_lines):
       final_lines_index += 1
 
 
-def _FormatFinalLines(final_lines, verify):
-  """Compose the final output from the finalized lines."""
-  formatted_code = []
+def _FormatFinalLines(final_lines):
+  """Compose the final output from the finalized lines and compute the
+  actual line numbers for formatted lines in the output file.
+  """
+
+  formatted_lines = []
+  lineno = 1
+
   for line in final_lines:
     formatted_line = []
+
     for tok in line.tokens:
       if not tok.is_pseudo_paren:
-        formatted_line.append(tok.formatted_whitespace_prefix)
-        formatted_line.append(tok.value)
+        formatted_line.append((tok.formatted_whitespace_prefix, tok, lineno))
+        lineno += tok.formatted_whitespace_prefix.count('\n')
+
+        formatted_line.append((tok.value, tok, lineno))
+        if tok.is_comment_or_doc_string:
+            lineno += tok.value.count('\n')
+
       else:
         if (not tok.next_token.whitespace_prefix.startswith('\n') and
             not tok.next_token.whitespace_prefix.startswith(' ')):
           if (tok.previous_token.value == ':' or
               tok.next_token.value not in ',}])'):
-            formatted_line.append(' ')
+            formatted_line.append((' ', tok. lineno))
 
-    formatted_code.append(''.join(formatted_line))
-    if verify:
-      verifier.VerifyCode(formatted_code[-1])
+    formatted_lines.append(formatted_line)
 
-  return ''.join(formatted_code) + '\n'
+  return formatted_lines
+
+
+def _UpdateWarnLocations(formatted_lines, messages):
+    items = itertools.chain.from_iterable(formatted_lines)
+    for _, tok, lineno in items:
+        if tok in messages:
+            messages.set_location(tok, lineno)
+
+
+def _ToText(formatted_lines, verify):
+  def process_lines(lines):
+    for line in lines:
+      line = ''.join(value for value, _, _ in line)
+      if verify:
+        verifier.VerifyCode(line)
+      yield line
+
+  lines = process_lines(formatted_lines)
+  return ''.join(lines) + '\n'
+
 
 
 class _StateNode(object):

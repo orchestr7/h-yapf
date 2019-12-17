@@ -33,7 +33,7 @@ class RunMainTest(testbase.WarnTestBase):
 
     def test_positive_case(self):
         formatted_code = textwrap.dedent("""\
-                        WARN 3: [filename: test_file, line: 5, column: 19]: 
+                        WARN 3: [filename: test_file, line: 5]: 
                         Using of wildcard imports (import *) is a bad style in 
                         python, it makes code less readable and can cause 
                         potential code issues""").replace('\n', '') + '\n'

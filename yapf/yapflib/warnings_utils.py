@@ -5,6 +5,7 @@ Copyright Information: Huawei Technologies Co., Ltd. All Rights Reserved © 2010
 Change History: 2019-12-02 17:27 Created
 """
 from enum import Enum, unique
+import collections
 import os
 import re
 import sys
@@ -47,11 +48,31 @@ WARNINGS_DESCRIPTION = {
 }
 
 
-def log_warn(warn, line_number, column_num, filename, **msg):
-    sys.stderr.write(f'WARN {warn.value}: [filename: {filename}, '
-                     f'line: {line_number}, '
-                     f'column: {column_num}]: '
-                     f'{WARNINGS_DESCRIPTION[warn]}\n'.format(**msg))
+class Messages:
+    def __init__(self, filename):
+        self.filename = os.path.basename(filename)
+        self.messages = collections.defaultdict(list)
+        self.line_numbers = dict()
+
+    def add(self, tok, warn, **kwargs):
+        self.messages[id(tok)].append((warn, kwargs))
+
+    def __contains__(self, tok):
+        return id(tok) in self.messages
+
+    def set_location(self, tok, lineno):
+        self.line_numbers[id(tok)] = lineno
+
+    def show(self):
+        def format_msg(lineno, warn, kwargs):
+            return (f'WARN {warn.value}: '
+                    f'[filename: {self.filename}, line: {lineno}]: '
+                    f'{WARNINGS_DESCRIPTION[warn]}'.format(**kwargs))
+
+        tokens = sorted(self.line_numbers.items(), key=lambda item: item[1])
+        for tok_id, lineno in tokens:
+            for msg in self.messages[tok_id]:
+                sys.stderr.write('%s\n' % format_msg(lineno, *msg))
 
 
 # Describes naming style rules, such as
@@ -84,37 +105,41 @@ encoding_regex = re.compile('^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
 def check_all_recommendations(uwlines, style, filename):
     # FixMe: will need to reduce the number of usages of this method when chosen
     # FixME: style does not need these warnings (affecting performance)
-    check_first_lines(uwlines, style, filename)
     prev_line = None
+    messages = Messages(filename)
+
+    check_first_lines(messages, uwlines, style)
+
     for line in uwlines:
-        warn_wildcard_imports(line, style, filename)
-        warn_if_global_vars_not_commented(line, prev_line, style, filename)
-        warn_class_naming_style(line, prev_line, style, filename)
-        warn_func_naming_style(line, prev_line, style, filename)
-        warn_vars_naming_style(line, prev_line, style, filename)
+        warn_wildcard_imports(messages, line, style)
+        warn_if_global_vars_not_commented(messages, line, prev_line, style)
+        warn_class_naming_style(messages, line, prev_line, style)
+        warn_func_naming_style(messages, line, prev_line, style)
+        warn_vars_naming_style(messages, line, prev_line, style)
         prev_line = line
 
+    return messages
 
-def check_first_lines(uwlines, style, filename):
+
+def check_first_lines(messages, uwlines, style):
     if len(uwlines) >= 1:
         first_line = uwlines[0]
         first_token = first_line.tokens[0]
 
-        warn_if_no_encoding(first_token, style, filename)
+        warn_if_no_encoding(messages, first_token, style)
 
 
 # wildcard imports should not be used in code
 # WARN: WILDCARD_IMPORT
 # Control option: SHOULD_HAVE_ENCODING_HEADER
-def warn_wildcard_imports(line, style, filename):
+def warn_wildcard_imports(messages, line, style):
     if not style.Get('SHOULD_NOT_HAVE_WILDCARD_IMPORTS'):
         return
 
     for tok in line.tokens:
         next_token = tok.next_token
         if tok.is_import_keyword and next_token.node.type == token.STAR:
-            log_warn(Warnings.WILDCARD_IMPORT,
-                     tok.lineno, next_token.column, os.path.basename(filename))
+            messages.add(tok, Warnings.WILDCARD_IMPORT)
             break
 
 
@@ -124,15 +149,14 @@ encoding_regex = re.compile('^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
 # will check if header contains encoding declaration in 1st or 2nd line
 # WARN: ENCODING_WARNING
 # Control option: SHOULD_HAVE_ENCODING_HEADER
-def warn_if_no_encoding(first_token, style, filename):
+def warn_if_no_encoding(messages, first_token, style):
     if style.Get('SHOULD_HAVE_ENCODING_HEADER'):
         if first_token.is_comment:
             all_comments = first_token.value.split('\n')
             if is_comment_with_encoding(all_comments, first_token.lineno):
                 return
 
-        log_warn(Warnings.ENCODING,
-                 first_token.lineno, 1, os.path.basename(filename))
+        messages.add(first_token, Warnings.ENCODING)
 
 
 def empty_newlines_in_the_beginning(lineno, comments):
@@ -191,15 +215,14 @@ def _is_comment_line(uwl):
     return True
 
 
-def warn_if_global_vars_not_commented(uwl, prev, style, filename):
+def warn_if_global_vars_not_commented(messages, uwl, prev, style):
     if not style.Get('WARN_NOT_COMMENTED_GLOBAL_VARS'):
         return
 
     if (_is_global_var_definition(uwl)
         and (prev is None or not _is_comment_line(prev))):
-        log_warn(Warnings.GLOBAL_VAR_COMMENT,
-                 uwl.lineno, uwl.first.column, os.path.basename(filename),
-                 variable=uwl.first.value)
+        messages.add(uwl.first, Warnings.GLOBAL_VAR_COMMENT,
+                     variable=uwl.first.value)
 
 
 def get_str_with_encoding(comments_str, lineno):
@@ -209,7 +232,7 @@ def get_str_with_encoding(comments_str, lineno):
     )
 
 
-def warn_class_naming_style(line, prev_line, style, filename):
+def warn_class_naming_style(messages, line, prev_line, style):
     """ Check if class names fit the naming rule."""
 
     naming_style_name = style.Get('CHECK_CLASS_NAMING_STYLE')
@@ -224,19 +247,18 @@ def warn_class_naming_style(line, prev_line, style, filename):
 
     def get_classname(uwl):
         tok = next(filter(lambda t: t.name == 'NAME', uwl.tokens[1:]))
-        return tok.value
+        return tok
 
     if is_class_definition(line):
         naming_style = NAMING_STYLE_REGEXPS['classname'][naming_style_name]
 
-        classname = get_classname(line)
-        if not naming_style.match(classname):
-            log_warn(Warnings.CLASS_NAMING_STYLE,
-                     line.lineno, line.first.column, os.path.basename(filename),
-                     classname=classname)
+        classname_tok = get_classname(line)
+        if not naming_style.match(classname_tok.value):
+            messages.add(classname_tok, Warnings.CLASS_NAMING_STYLE,
+                         classname=classname_tok.value)
 
 
-def warn_func_naming_style(line, prev_line, style, filename):
+def warn_func_naming_style(messages, line, prev_line, style):
     """ Check if function (member or not) names fit the naming rule."""
 
     naming_style_name = style.Get('CHECK_FUNC_NAMING_STYLE')
@@ -245,19 +267,18 @@ def warn_func_naming_style(line, prev_line, style, filename):
 
     def get_funcname(uwl):
         tok = next(filter(lambda t: t.name == 'NAME', uwl.tokens[1:]))
-        return tok.value
+        return tok
 
     if line.tokens and line.is_func_definition:
         naming_style = NAMING_STYLE_REGEXPS['funcname'][naming_style_name]
 
-        funcname = get_funcname(line)
-        if not naming_style.match(funcname):
-            log_warn(Warnings.FUNC_NAMING_STYLE,
-                     line.lineno, line.first.column, os.path.basename(filename),
-                     funcname=funcname)
+        funcname_tok = get_funcname(line)
+        if not naming_style.match(funcname_tok. value):
+            messages.add(funcname_tok, Warnings.FUNC_NAMING_STYLE,
+                         funcname=funcname_tok.value)
 
 
-def warn_vars_naming_style(line, prev_line, style, filename):
+def warn_vars_naming_style(messages, line, prev_line, style):
     """ Check whether varibales and function argumens fit the naming rule."""
 
     naming_style_name = style.Get('CHECK_VAR_NAMING_STYLE')
@@ -318,13 +339,9 @@ def warn_vars_naming_style(line, prev_line, style, filename):
 
     naming_style = NAMING_STYLE_REGEXPS['varname'][naming_style_name]
     for tok in tokens:
-        varname = tok.value
-
         # explicitly allow UPPER CASE names, because constants sould be
         # named this way regargless the naming style
-        if not (varname == 'self'
-                or varname.isupper()
-                or naming_style.match(varname)):
-            log_warn(Warnings.VAR_NAMING_STYLE,
-                     tok.lineno, tok.column, os.path.basename(filename),
-                     variable=tok.value)
+        if not (tok.value == 'self'
+                or tok.value.isupper()
+                or naming_style.match(tok.value)):
+            messages.add(tok, Warnings.VAR_NAMING_STYLE, variable=tok.value)
