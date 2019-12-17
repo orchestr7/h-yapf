@@ -6,6 +6,7 @@ Change History: 2019-12-17 Created
 """
 
 import sys
+import re
 from yapftests import yapf_test_helper
 
 
@@ -30,3 +31,27 @@ class WarnTestBase(yapf_test_helper.YAPFTest):
         sys.stderr = self.__orig_stderr
         del self.__orig_stderr
         del self._stderr
+
+
+    def __filter_warns(self, warnno):
+        def check_warnno(warn):
+            return warn.startswith(f'WARN {warnno.value}')
+        return filter(check_warnno, self._stderr.messages)
+
+
+    def assertWanrMessage(self, warnno, pattern):
+        def check_msg(warn):
+            return re.search(pattern, warn)
+
+        try:
+            warns = self.__filter_warns(warnno)
+            next(filter(check_msg, warns))
+        except StopIteration:
+            self.fail(f'No such message: warn={warnno} patern="{pattern}"')
+
+
+    def assertWanrCount(self, warnno, expected):
+        warns = list(self.__filter_warns(warnno))
+        n_warns = len(warns)
+        if n_warns != expected:
+            self.fail('The warnings number mismatch: {n_warns} vs {expected}')

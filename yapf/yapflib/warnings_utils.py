@@ -10,9 +10,11 @@ import re
 import sys
 import textwrap
 
+from lib2to3 import pytree
 from lib2to3.pgen2 import token
 
 from . import pytree_utils
+from .format_token import FormatToken
 
 
 @unique
@@ -22,6 +24,7 @@ class Warnings(Enum):
     WILDCARD_IMPORT = 3
     CLASS_NAMING_STYLE = 4
     FUNC_NAMING_STYLE = 5
+    VAR_NAMING_STYLE = 6
 
 
 WARNINGS_DESCRIPTION = {
@@ -35,6 +38,8 @@ WARNINGS_DESCRIPTION = {
     Warnings.GLOBAL_VAR_COMMENT: textwrap.dedent(
         "Global variable {variable} has missing detailed comment for it"
     ),
+    Warnings.VAR_NAMING_STYLE: textwrap.dedent(
+        "Invalid variable name: {variable}"),
     Warnings.WILDCARD_IMPORT: textwrap.dedent(
         "Using of wildcard imports (import *) is a bad style in python, "
         "it makes code less readable and can cause potential code issues"
@@ -65,6 +70,11 @@ NAMING_STYLE_REGEXPS = dict(
         CAMELCASE = re.compile(r'((_{0,2}[a-z][a-zA-Z0-9]+)|(__.*__))$'),
         SNAKECASE = re.compile(r'((_{0,2}[a-z][a-z0-9_]+)|(__.*__))$'),
     ),
+    varname = dict(
+        PASCALCASE = re.compile(r'((_{0,2}[A-Z][a-zA-Z0-9]*)|(__.*__))$'),
+        CAMELCASE = re.compile(r'((_{0,2}[a-z][a-zA-Z0-9]*)|(__.*__))$'),
+        SNAKECASE = re.compile(r'((_{0,2}[a-z][a-z0-9_]*)|(__.*__))$'),
+    ),
 )
 
 
@@ -81,6 +91,7 @@ def check_all_recommendations(uwlines, style, filename):
         warn_if_global_vars_not_commented(line, prev_line, style, filename)
         warn_class_naming_style(line, prev_line, style, filename)
         warn_func_naming_style(line, prev_line, style, filename)
+        warn_vars_naming_style(line, prev_line, style, filename)
         prev_line = line
 
 
@@ -224,6 +235,13 @@ def warn_class_naming_style(line, prev_line, style, filename):
                      line.lineno, line.first.column, os.path.basename(filename))
 
 
+def _is_func_definition(uwl):
+    return (uwl.tokens
+            and uwl.first.is_keyword
+            and uwl.first.value == 'def'
+            )
+
+
 def warn_func_naming_style(line, prev_line, style, filename):
     """ Check if function (member or not) names fit the naming rule."""
 
@@ -231,20 +249,87 @@ def warn_func_naming_style(line, prev_line, style, filename):
     if not naming_style_name:
         return
 
-    def is_func_definition(uwl):
-        return (uwl.tokens
-                and uwl.first.is_keyword
-                and uwl.first.value == 'def'
-                )
-
     def get_funcname(uwl):
         tok = next(filter(lambda t: t.name == 'NAME', uwl.tokens[1:]))
         return tok.value
 
-    if is_func_definition(line):
+    if _is_func_definition(line):
         naming_style = NAMING_STYLE_REGEXPS['funcname'][naming_style_name]
 
         funcname = get_funcname(line)
         if not naming_style.match(funcname):
             log_warn(Warnings.FUNC_NAMING_STYLE,
                      line.lineno, line.first.column, os.path.basename(filename))
+
+
+def warn_vars_naming_style(line, prev_line, style, filename):
+    """ Check whether varibales and function argumens fit the naming rule."""
+
+    naming_style_name = style.Get('CHECK_VAR_NAMING_STYLE')
+    if not naming_style_name:
+        return
+
+    def is_expr(uwl):
+        if not uwl.tokens:
+            return
+
+        node = uwl.first.node
+        while node is not None:
+            if (isinstance(node, pytree.Node)
+                and pytree_utils.NodeName(node) == 'expr_stmt'):
+                return True
+            node = node.parent
+
+        return False
+
+    def is_assignment(uwl):
+        return (is_expr(uwl)
+                and next(filter(lambda t: t.is_name, uwl.tokens), None))
+
+    def get_lhs_tokens(uwl):
+        for tok in uwl.tokens:
+            if tok.name == 'NAME':
+                yield tok
+            elif tok.name == 'EQUAL':
+                break
+
+    def iter_token_range(first, last):
+        while True:
+            yield first
+            if first is last:
+                break
+            first = first.next_token
+
+    def iter_parameters(paramlist):
+        for item in paramlist:
+            tokens = iter_token_range(item.first_token, item.last_token)
+            tokens = filter(lambda t: t.name == 'NAME', tokens)
+            first = next(tokens, None)
+            assert first is not None
+            yield first
+
+    def get_func_args(uwl):
+        for tok in uwl.tokens:
+            if not tok.parameters:
+                continue
+            yield from iter_parameters(tok.parameters)
+
+    if is_assignment(line):
+        tokens = get_lhs_tokens(line)
+    elif _is_func_definition(line):
+        tokens = get_func_args(line)
+    else:
+        return
+
+    naming_style = NAMING_STYLE_REGEXPS['varname'][naming_style_name]
+    for tok in tokens:
+        varname = tok.value
+
+        # explicitly allow UPPER CASE names, because constants sould be
+        # named this way regargless the naming style
+        if not (varname == 'self'
+                or varname.isupper()
+                or naming_style.match(varname)):
+            log_warn(Warnings.VAR_NAMING_STYLE,
+                     tok.lineno, tok.column, os.path.basename(filename),
+                     variable=tok.value)
