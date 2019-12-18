@@ -215,6 +215,10 @@ class UnwrappedLine(object):
     return self.first.is_comment
 
   @property
+  def is_func_definition(self):
+      return self.first.is_keyword and self.first.value == 'def'
+
+  @property
   def has_semicolon(self):
     return any(tok.value == ';' for tok in self._tokens)
 

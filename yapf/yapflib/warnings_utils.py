@@ -236,13 +236,6 @@ def warn_class_naming_style(line, prev_line, style, filename):
                      classname=classname)
 
 
-def _is_func_definition(uwl):
-    return (uwl.tokens
-            and uwl.first.is_keyword
-            and uwl.first.value == 'def'
-            )
-
-
 def warn_func_naming_style(line, prev_line, style, filename):
     """ Check if function (member or not) names fit the naming rule."""
 
@@ -254,7 +247,7 @@ def warn_func_naming_style(line, prev_line, style, filename):
         tok = next(filter(lambda t: t.name == 'NAME', uwl.tokens[1:]))
         return tok.value
 
-    if _is_func_definition(line):
+    if line.tokens and line.is_func_definition:
         naming_style = NAMING_STYLE_REGEXPS['funcname'][naming_style_name]
 
         funcname = get_funcname(line)
@@ -318,7 +311,7 @@ def warn_vars_naming_style(line, prev_line, style, filename):
 
     if is_assignment(line):
         tokens = get_lhs_tokens(line)
-    elif _is_func_definition(line):
+    elif line.tokens and line.is_func_definition:
         tokens = get_func_args(line)
     else:
         return
