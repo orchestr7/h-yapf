@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Function: all logic that is related with warnins will be here
+Function: all logic that is related with fixing style of shebang statements
 Copyright Information: Huawei Technologies Co., Ltd. All Rights Reserved © 2010-2019
 Change History: 2019-12-12 18:11 Created
 """
@@ -13,7 +13,7 @@ usr_shebang = re.compile('^#![ \t]*/usr/bin.*')
 # shebang with #!/usr/bin/env python should be used in the header of source file
 # Control option: FIX_SHEBANG_HEADER
 def fix_shebang_comment_header(uwlines, style):
-    if style.Get('FIX_SHEBANG_HEADER'):
+    if style.Get('FIX_SHEBANG_HEADER') and len(uwlines) >= 1:
         first_line = uwlines[0]
         first_token = first_line.tokens[0]
 
