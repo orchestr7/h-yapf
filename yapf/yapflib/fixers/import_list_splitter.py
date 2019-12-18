@@ -25,9 +25,9 @@ vs a singe input statement).
 
 import copy
 
-from . import format_token
-from . import style
-from . import unwrapped_line
+from .. import format_token
+from .. import style
+from .. import unwrapped_line
 
 
 def is_import_stmt(uwl):

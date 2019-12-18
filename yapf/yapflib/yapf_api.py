@@ -39,12 +39,10 @@ import sys
 from lib2to3.pgen2 import parse
 
 from yapf.yapflib import blank_line_calculator
-from yapf.yapflib import comment_formatter
 from yapf.yapflib import comment_splicer
 from yapf.yapflib import continuation_splicer
 from yapf.yapflib import file_resources
 from yapf.yapflib import identify_container
-from yapf.yapflib import import_list_splitter
 from yapf.yapflib import long_lines_splitter
 from yapf.yapflib import py3compat
 from yapf.yapflib import pytree_unwrapper
@@ -53,6 +51,8 @@ from yapf.yapflib import reformatter
 from yapf.yapflib import split_penalty
 from yapf.yapflib import style
 from yapf.yapflib import subtype_assigner
+from yapf.yapflib.fixers import comment_formatter
+from yapf.yapflib.fixers import import_list_splitter
 from yapf.yapflib.ordering_utils import order_main_code_blocks
 
 

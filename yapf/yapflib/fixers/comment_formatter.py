@@ -5,7 +5,7 @@ Copyright Information: Huawei Technologies Co., Ltd. All Rights Reserved © 2010
 Change History: 2019-12-10 Created
 """
 
-from . import style
+from .. import style
 
 
 def format_comments(uwlines):
