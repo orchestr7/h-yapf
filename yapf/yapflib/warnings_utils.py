@@ -108,14 +108,16 @@ def check_all_recommendations(uwlines, style, filename):
     prev_line = None
     messages = Messages(filename)
 
+    warn_redefinition = RedefenitionChecker()
+
     check_first_lines(messages, uwlines, style)
 
     for line in uwlines:
         warn_wildcard_imports(messages, line, style)
         warn_if_global_vars_not_commented(messages, line, prev_line, style)
-        warn_class_naming_style(messages, line, prev_line, style)
-        warn_func_naming_style(messages, line, prev_line, style)
-        warn_vars_naming_style(messages, line, prev_line, style)
+        warn_class_naming_style(messages, line, style)
+        warn_func_naming_style(messages, line, style)
+        warn_vars_naming_style(messages, line, style)
         prev_line = line
 
     return messages
@@ -232,7 +234,7 @@ def get_str_with_encoding(comments_str, lineno):
     )
 
 
-def warn_class_naming_style(messages, line, prev_line, style):
+def warn_class_naming_style(messages, line, style):
     """ Check if class names fit the naming rule."""
 
     naming_style_name = style.Get('CHECK_CLASS_NAMING_STYLE')
@@ -258,7 +260,7 @@ def warn_class_naming_style(messages, line, prev_line, style):
                          classname=classname_tok.value)
 
 
-def warn_func_naming_style(messages, line, prev_line, style):
+def warn_func_naming_style(messages, line, style):
     """ Check if function (member or not) names fit the naming rule."""
 
     naming_style_name = style.Get('CHECK_FUNC_NAMING_STYLE')
@@ -278,7 +280,7 @@ def warn_func_naming_style(messages, line, prev_line, style):
                          funcname=funcname_tok.value)
 
 
-def warn_vars_naming_style(messages, line, prev_line, style):
+def warn_vars_naming_style(messages, line, style):
     """ Check whether varibales and function argumens fit the naming rule."""
 
     naming_style_name = style.Get('CHECK_VAR_NAMING_STYLE')
