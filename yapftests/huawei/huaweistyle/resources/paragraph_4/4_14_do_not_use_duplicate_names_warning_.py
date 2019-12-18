@@ -1,14 +1,17 @@
-
-def op(a, b):
-    return a + b
+# -*- coding: utf-8 -*-
 
 
-def apply_op(a, b):
-    return foo(a, b)
+def func(a):
+    pass
 
 
-def op(a, b):
-    return a * b
+def func():
+    pass
 
 
-x = apply_op(1, 2)
+class Class:
+    def method(self):
+        pass
+
+    def method(self):
+        pass

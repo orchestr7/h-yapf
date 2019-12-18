@@ -422,6 +422,8 @@ _STYLE_HELP = dict(
     WARN_NOT_COMMENTED_GLOBAL_VARS=textwrap.dedent("""\
       Warn when a global variable definition is not accompanied by a
       commentary"""),
+    WARN_REDEFINITION=textwrap.dedent("""\
+      Warn if a function / class / method is redefined."""),
     # BASED_ON_STYLE='Which predefined style this style is based on',
 )
 
@@ -497,6 +499,7 @@ def CreatePEP8Style():
       SHOULD_HAVE_ENCODING_HEADER=False,
       SHOULD_NOT_HAVE_WILDCARD_IMPORTS=False,
       WARN_NOT_COMMENTED_GLOBAL_VARS=False,
+      WARN_REDEFINITION=False,
   )
 
 
@@ -535,6 +538,7 @@ def CreateHuaweiStyle():
   style['INSERT_SPACE_AFTER_HASH_CHAR'] = True
   style['SHOULD_NOT_HAVE_WILDCARD_IMPORTS'] = True
   style['WARN_NOT_COMMENTED_GLOBAL_VARS'] = True
+  style['WARN_REDEFINITION'] = True
   style['FIX_SHEBANG_HEADER'] = True
   style['CHECK_CLASS_NAMING_STYLE'] = 'PASCALCASE'
   style['CHECK_FUNC_NAMING_STYLE'] = 'SNAKECASE'
@@ -732,6 +736,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     SPLIT_SINGLE_LINE_IMPORTS=_BoolConverter,
     USE_TABS=_BoolConverter,
     WARN_NOT_COMMENTED_GLOBAL_VARS=_BoolConverter,
+    WARN_REDEFINITION=_BoolConverter,
 )
 
 

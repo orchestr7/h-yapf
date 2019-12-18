@@ -6,6 +6,7 @@ Change History: 2019-12-02 17:27 Created
 """
 from enum import Enum, unique
 import collections
+from functools import partial
 import os
 import re
 import sys
@@ -13,6 +14,7 @@ import textwrap
 
 from lib2to3 import pytree
 from lib2to3.pgen2 import token
+from lib2to3.pygram import python_symbols as syms
 
 from . import pytree_utils
 from .format_token import FormatToken
@@ -26,6 +28,7 @@ class Warnings(Enum):
     CLASS_NAMING_STYLE = 4
     FUNC_NAMING_STYLE = 5
     VAR_NAMING_STYLE = 6
+    REDEFININED = 7
 
 
 WARNINGS_DESCRIPTION = {
@@ -38,6 +41,9 @@ WARNINGS_DESCRIPTION = {
         "Invalid function name: {funcname}"),
     Warnings.GLOBAL_VAR_COMMENT: textwrap.dedent(
         "Global variable {variable} has missing detailed comment for it"
+    ),
+    Warnings.REDEFININED: textwrap.dedent(
+        "'{name}' already defined here: lineno={first}"
     ),
     Warnings.VAR_NAMING_STYLE: textwrap.dedent(
         "Invalid variable name: {variable}"),
@@ -57,6 +63,10 @@ class Messages:
     def add(self, tok, warn, **kwargs):
         self.messages[id(tok)].append((warn, kwargs))
 
+    def remember_location(self, tok):
+        if tok not in self:
+            self.messages[id(tok)] = []
+
     def __contains__(self, tok):
         return id(tok) in self.messages
 
@@ -69,10 +79,19 @@ class Messages:
                     f'[filename: {self.filename}, line: {lineno}]: '
                     f'{WARNINGS_DESCRIPTION[warn]}'.format(**kwargs))
 
+        def handle_callbacks(kwargs):
+            for key, value in args.items():
+                if callable(value):
+                    args[key] = value()
+
         tokens = sorted(self.line_numbers.items(), key=lambda item: item[1])
         for tok_id, lineno in tokens:
-            for msg in self.messages[tok_id]:
-                sys.stderr.write('%s\n' % format_msg(lineno, *msg))
+            for warn, args in self.messages[tok_id]:
+                handle_callbacks(args)
+                sys.stderr.write('%s\n' % format_msg(lineno, warn, args))
+
+    def get_lineno(self, tok):
+        return self.line_numbers[id(tok)]
 
 
 # Describes naming style rules, such as
@@ -118,6 +137,7 @@ def check_all_recommendations(uwlines, style, filename):
         warn_class_naming_style(messages, line, style)
         warn_func_naming_style(messages, line, style)
         warn_vars_naming_style(messages, line, style)
+        warn_redefinition(messages, line, style)
         prev_line = line
 
     return messages
@@ -341,3 +361,68 @@ def warn_vars_naming_style(messages, line, style):
                 or tok.value.isupper()
                 or naming_style.match(tok.value)):
             messages.add(tok, Warnings.VAR_NAMING_STYLE, variable=tok.value)
+
+
+class RedefenitionChecker:
+    """ Generate warnings when a class / function / method is redefined."""
+
+    def __init__(self):
+        self.__names = collections.defaultdict(set)
+        self.__first_defs = dict()
+
+    def __call__(self, messages, line, style):
+        if not style.Get('WARN_REDEFINITION'):
+            return
+
+        if not (line.tokens
+                and (line.is_func_definition or line.is_class_definition)):
+            return
+
+        scope = id(self.__get_parent_scope(line))
+        name = self.__get_name(line)
+
+        if name.value in self.__names[scope]:
+            first = self.__first_defs[(scope, name.value)]
+            messages.remember_location(first)
+            messages.add(name, Warnings.REDEFININED, name=name.value,
+                first=partial(messages.get_lineno, first))
+
+        else:
+            self.__first_defs[(scope, name.value)] = name
+
+        self.__names[scope].add(name.value)
+
+    def __get_parent_scope(self, line):
+        """ Returns the root node for the line's scope.
+
+        For instance, for `my_method()` in the example below it
+        would return a reference to the parent 'classdef' node.
+
+            classdef
+                NAME class
+                NAME MyClass
+                COLON
+                suite
+                    ...
+                    funcdef
+                        NAME def
+                        name my_method
+            ...
+        """
+
+        def if_class_or_func_def(node):
+            return node.type == syms.classdef or node.type == syms.funcdef
+
+        node = line.first.node.parent
+        assert if_class_or_func_def(node)
+
+        node = node.parent
+        while node.parent is not None:
+            if if_class_or_func_def(node):
+                return node
+            node = node.parent
+
+        return node
+
+    def __get_name(self, line):
+        return next(filter(lambda t: t.name == 'NAME', line.tokens[1:]))
