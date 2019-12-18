@@ -19,6 +19,7 @@ single line if there were no line length restrictions. It's then used by the
 parser to perform the wrapping required to comply with the style guide.
 """
 
+from lib2to3.pygram import python_symbols as syms
 from yapf.yapflib import format_token
 from yapf.yapflib import py3compat
 from yapf.yapflib import pytree_utils
@@ -216,7 +217,11 @@ class UnwrappedLine(object):
 
   @property
   def is_func_definition(self):
-      return self.first.is_keyword and self.first.value == 'def'
+      return self.first.node.parent.type == syms.funcdef
+
+  @property
+  def is_class_definition(self):
+      return self.first.node.parent.type == syms.classdef
 
   @property
   def has_semicolon(self):

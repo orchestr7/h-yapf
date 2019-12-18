@@ -241,17 +241,11 @@ def warn_class_naming_style(messages, line, style):
     if not naming_style_name:
         return
 
-    def is_class_definition(uwl):
-        return (uwl.tokens
-                and uwl.first.is_keyword
-                and uwl.first.value == 'class'
-                )
-
     def get_classname(uwl):
         tok = next(filter(lambda t: t.name == 'NAME', uwl.tokens[1:]))
         return tok
 
-    if is_class_definition(line):
+    if line.tokens and line.is_class_definition:
         naming_style = NAMING_STYLE_REGEXPS['classname'][naming_style_name]
 
         classname_tok = get_classname(line)
