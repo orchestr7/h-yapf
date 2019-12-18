@@ -7,7 +7,7 @@ class simple_class:
 
 
 class \
-        fromatted_class_def:
+        formatted_class_def:
     pass
 
 

@@ -29,12 +29,12 @@ class Warnings(Enum):
 
 WARNINGS_DESCRIPTION = {
     Warnings.CLASS_NAMING_STYLE: textwrap.dedent(
-        "Invalid class name"),
+        "Invalid class name: {classname}"),
     Warnings.ENCODING: textwrap.dedent(
         "Each source file should have encoding header on the first or second "
         "line like [# -*- coding: <encoding format> -*-] (see also: pep-0263)"),
     Warnings.FUNC_NAMING_STYLE: textwrap.dedent(
-        "Invalid function name"),
+        "Invalid function name: {funcname}"),
     Warnings.GLOBAL_VAR_COMMENT: textwrap.dedent(
         "Global variable {variable} has missing detailed comment for it"
     ),
@@ -232,7 +232,8 @@ def warn_class_naming_style(line, prev_line, style, filename):
         classname = get_classname(line)
         if not naming_style.match(classname):
             log_warn(Warnings.CLASS_NAMING_STYLE,
-                     line.lineno, line.first.column, os.path.basename(filename))
+                     line.lineno, line.first.column, os.path.basename(filename),
+                     classname=classname)
 
 
 def _is_func_definition(uwl):
@@ -259,7 +260,8 @@ def warn_func_naming_style(line, prev_line, style, filename):
         funcname = get_funcname(line)
         if not naming_style.match(funcname):
             log_warn(Warnings.FUNC_NAMING_STYLE,
-                     line.lineno, line.first.column, os.path.basename(filename))
+                     line.lineno, line.first.column, os.path.basename(filename),
+                     funcname=funcname)
 
 
 def warn_vars_naming_style(line, prev_line, style, filename):
