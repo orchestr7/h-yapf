@@ -29,11 +29,14 @@ class Warnings(Enum):
     FUNC_NAMING_STYLE = 5
     VAR_NAMING_STYLE = 6
     REDEFININED = 7
+    COMP_WITH_NONE = 8
 
 
 WARNINGS_DESCRIPTION = {
     Warnings.CLASS_NAMING_STYLE: textwrap.dedent(
         "Invalid class name: {classname}"),
+    Warnings.COMP_WITH_NONE: textwrap.dedent(
+        "Comparison to none should be `{var} {op} None`"),
     Warnings.ENCODING: textwrap.dedent(
         "Each source file should have encoding header on the first or second "
         "line like [# -*- coding: <encoding format> -*-] (see also: pep-0263)"),
@@ -138,6 +141,7 @@ def check_all_recommendations(uwlines, style, filename):
         warn_func_naming_style(messages, line, style)
         warn_vars_naming_style(messages, line, style)
         warn_redefinition(messages, line, style)
+        warn_incorrect_comparison_with_none(messages, line, style)
         prev_line = line
 
     return messages
@@ -426,3 +430,33 @@ class RedefenitionChecker:
 
     def __get_name(self, line):
         return next(filter(lambda t: t.name == 'NAME', line.tokens[1:]))
+
+
+def warn_incorrect_comparison_with_none(messages, line, style):
+    if not style.Get('WARN_INCORRECT_COMPARISON_WITH_NONE'):
+        return
+
+    def find_comp_exprs(line):
+        for tok in line.tokens:
+            if tok.is_binary_op and tok.value in {'==', '!='}:
+                left = tok.node.prev_sibling
+                right = tok.node.next_sibling
+                assert type(left) == type(right)
+
+                # ignore any compound operands (e.g. tuples)
+                if isinstance(left, pytree.Leaf):
+                    yield left, tok, right
+
+    def add_warn(op, operand):
+        if op.value == '==':
+            messages.add(op, Warnings.COMP_WITH_NONE,
+                         var=operand.value, op='is')
+        elif op.value == '!=':
+            messages.add(op, Warnings.COMP_WITH_NONE,
+                         var=operand.value, op='is not')
+
+    for left, op, right in find_comp_exprs(line):
+        if left.value == 'None':
+            add_warn(op, right)
+        if right.value == 'None':
+            add_warn(op, left)

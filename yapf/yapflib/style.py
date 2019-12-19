@@ -419,6 +419,8 @@ _STYLE_HELP = dict(
         """),
     USE_TABS=textwrap.dedent("""\
       Use the Tab character for indentation."""),
+    WARN_INCORRECT_COMPARISON_WITH_NONE=textwrap.dedent("""\
+      Operator `is` should be used when compare with None."""),
     WARN_NOT_COMMENTED_GLOBAL_VARS=textwrap.dedent("""\
       Warn when a global variable definition is not accompanied by a
       commentary"""),
@@ -498,6 +500,7 @@ def CreatePEP8Style():
       USE_TABS=False,
       SHOULD_HAVE_ENCODING_HEADER=False,
       SHOULD_NOT_HAVE_WILDCARD_IMPORTS=False,
+      WARN_INCORRECT_COMPARISON_WITH_NONE=False,
       WARN_NOT_COMMENTED_GLOBAL_VARS=False,
       WARN_REDEFINITION=False,
   )
@@ -537,6 +540,7 @@ def CreateHuaweiStyle():
   style['FORCE_LONG_LINES_WRAPPING'] = True
   style['INSERT_SPACE_AFTER_HASH_CHAR'] = True
   style['SHOULD_NOT_HAVE_WILDCARD_IMPORTS'] = True
+  style['WARN_INCORRECT_COMPARISON_WITH_NONE'] = True
   style['WARN_NOT_COMMENTED_GLOBAL_VARS'] = True
   style['WARN_REDEFINITION'] = True
   style['FIX_SHEBANG_HEADER'] = True
@@ -735,6 +739,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     SPLIT_PENALTY_LOGICAL_OPERATOR=int,
     SPLIT_SINGLE_LINE_IMPORTS=_BoolConverter,
     USE_TABS=_BoolConverter,
+    WARN_INCORRECT_COMPARISON_WITH_NONE=_BoolConverter,
     WARN_NOT_COMMENTED_GLOBAL_VARS=_BoolConverter,
     WARN_REDEFINITION=_BoolConverter,
 )

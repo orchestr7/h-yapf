@@ -1,3 +1,0 @@
-
-if var == None:
-    pass
