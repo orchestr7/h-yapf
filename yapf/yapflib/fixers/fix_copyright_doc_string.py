@@ -58,10 +58,11 @@ def get_copyright_doc_string(uwlines):
 
 
 def format_doc_string(uwlines, style):
-    if style.Get('FORMAT_DOC_STRING'):
+    if style.Get('FORMAT_COPYRIGHT_DOC_STRING'):
         doc_token = get_copyright_doc_string(uwlines)
         if doc_token:
             doc_token.token.value = '\n'.join(doc_token.lines)
+
 
 
 def move_doc_string_to_head(uwlines, style):
