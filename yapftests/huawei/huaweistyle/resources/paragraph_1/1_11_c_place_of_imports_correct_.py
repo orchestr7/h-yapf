@@ -1,6 +1,5 @@
 '''docs'''
 import b
-
 import a
 import module
 

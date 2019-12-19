@@ -36,8 +36,7 @@ from yapf.yapflib import style
 from yapf.yapflib import verifier
 import yapf.yapflib.warnings_utils as warns
 from yapf.yapflib.fixers.fix_shebang_comment import fix_shebang_comment_header
-from yapf.yapflib.fixers.fix_copyright_doc_string import \
-  format_doc_string
+from yapf.yapflib.fixers.fix_copyright_doc_string import format_doc_string
 
 
 def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):

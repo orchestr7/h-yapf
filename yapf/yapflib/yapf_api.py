@@ -53,7 +53,8 @@ from yapf.yapflib import style
 from yapf.yapflib import subtype_assigner
 from yapf.yapflib.fixers import comment_formatter
 from yapf.yapflib.fixers import import_list_splitter
-from yapf.yapflib.ordering_utils import order_main_code_blocks
+from yapf.yapflib.fixers.fix_copyright_doc_string import move_doc_string_to_head
+from yapf.yapflib.fixers.fix_import_order import move_all_imports_to_head
 
 
 def FormatFile(filename,
@@ -149,7 +150,8 @@ def FormatCode(unformatted_source,
 
   uwlines = pytree_unwrapper.UnwrapPyTree(tree)
 
-  order_main_code_blocks(uwlines, style)
+  # make all ordering of code (imports/comments/variables declarations/e.t.c.)
+  _OrderCode(uwlines, style)
 
   for uwl in uwlines:
     uwl.CalculateFormattingInformation()
@@ -310,3 +312,7 @@ def _GetUnifiedDiff(before, after, filename='code'):
           '(original)',
           '(reformatted)',
           lineterm='')) + '\n'
+
+def _OrderCode(uwlines, style):
+    move_doc_string_to_head(uwlines, style)
+    move_all_imports_to_head(uwlines, style)

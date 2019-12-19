@@ -51,7 +51,12 @@ _STYLE_HELP = dict(
       If enabled (True) will find all imports used in code and move it right to
       the beginning of the file. It would be added after all
       comments/doc strings from the beginning of the file.
-      Note! It won't move indented imports from code blocks.
+      Note! It won't move indented imports from code blocks (functions/classes).
+    """),
+    AGGRESSIVELY_MOVE_DOC_STRING_TO_HEAD=textwrap.dedent("""\
+    If enabled (True) will find a doc string with copyright information
+     (Copyright Information:) and move it before imports (after other comments)
+     in the beginning of the file
     """),
     ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT=textwrap.dedent("""\
       Align closing bracket with visual indentation."""),
@@ -219,7 +224,7 @@ _STYLE_HELP = dict(
       Insert a missing space after the # char."""),
     FIX_SHEBANG_HEADER=textwrap.dedent("""\
       Changing shebang to a more accurate format:
-         !#/usr/bin/pythonX -> !#/usr/bin/env/pythonX  
+         !#/usr/bin/pythonX -> !#/usr/bin/env pythonX
     """),
     FORCE_LONG_LINES_WRAPPING=textwrap.dedent("""\
       Enclose long lines in parentheses in order to make them wrappable:
@@ -232,7 +237,7 @@ _STYLE_HELP = dict(
           if (with > 10 ... and height > 10):
               ...
       """),
-    FORMAT_COPYRIGHT_DOC_STRING=textwrap.dedent("""\
+    FORMAT_DOC_STRING=textwrap.dedent("""\
       Replacing indents (lstrip) for a doc string at the top of the source file   
     """),
     JOIN_MULTIPLE_LINES=textwrap.dedent("""\
@@ -420,7 +425,8 @@ _STYLE_HELP = dict(
 
 def CreatePEP8Style():
   return dict(
-      AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD = False,
+      AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD=False,
+      AGGRESSIVELY_MOVE_DOC_STRING_TO_HEAD=None,
       ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT=True,
       ALLOW_MULTILINE_LAMBDAS=False,
       ALLOW_MULTILINE_DICTIONARY_KEYS=False,
@@ -445,7 +451,7 @@ def CreatePEP8Style():
       EACH_DICT_ENTRY_ON_SEPARATE_LINE=True,
       FIX_SHEBANG_HEADER=False,
       FORCE_LONG_LINES_WRAPPING=False,
-      FORMAT_COPYRIGHT_DOC_STRING=False,
+      FORMAT_DOC_STRING=False,
       I18N_COMMENT='',
       I18N_FUNCTION_CALL='',
       INDENT_DICTIONARY_VALUE=False,
@@ -512,6 +518,8 @@ def CreateGoogleStyle():
 def CreateHuaweiStyle():
   style = CreateGoogleStyle()
   style['AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD'] = True
+  style['AGGRESSIVELY_MOVE_DOC_STRING_TO_HEAD'] = 'Copyright Information: Huawei'
+  style['FORMAT_DOC_STRING'] = True
   style['SHOULD_HAVE_ENCODING_HEADER'] = True
   style['NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS'] = '*'
   style['SPLIT_SINGLE_LINE_IMPORTS'] = True
@@ -639,6 +647,8 @@ def _NamingStyleStringConverter(s):
 
     return None
 
+def _SimpleStringConverter(s):
+    return s
 
 # Different style options need to have their values interpreted differently when
 # read from the config file. This dict maps an option name to a "converter"
@@ -649,6 +659,7 @@ def _NamingStyleStringConverter(s):
 # Note: this dict has to map all the supported style options.
 _STYLE_OPTION_VALUE_CONVERTER = dict(
     AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD=_BoolConverter,
+    AGGRESSIVELY_MOVE_DOC_STRING_TO_HEAD=_SimpleStringConverter,
     ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT=_BoolConverter,
     ALLOW_MULTILINE_LAMBDAS=_BoolConverter,
     ALLOW_MULTILINE_DICTIONARY_KEYS=_BoolConverter,
@@ -682,7 +693,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=_StringSetConverter,
     SAVE_INITIAL_IDENTS_FORMATTING=_BoolConverter,
     FIX_SHEBANG_HEADER=_BoolConverter,
-    FORMAT_COPYRIGHT_DOC_STRING=_BoolConverter,
+    FORMAT_DOC_STRING=_BoolConverter,
     SHOULD_HAVE_ENCODING_HEADER=_BoolConverter,
     SHOULD_NOT_HAVE_WILDCARD_IMPORTS=_BoolConverter,
     SPACE_BETWEEN_ENDING_COMMA_AND_CLOSING_BRACKET=_BoolConverter,
