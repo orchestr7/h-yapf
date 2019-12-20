@@ -37,7 +37,7 @@ from yapf.yapflib import style
 from yapf.yapflib import verifier
 import yapf.yapflib.warnings_utils as warns
 from yapf.yapflib.fixers.fix_shebang_comment import fix_shebang_comment_header
-from yapf.yapflib.fixers.fix_copyright_doc_string import format_doc_string
+from yapf.yapflib.fixers.fix_copyright_doc_string import format_doc_strings
 
 
 def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
@@ -60,7 +60,7 @@ def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
   # special checks for a format of a header that can produce warnings
   messages = warns.check_all_recommendations(uwlines, style, filename)
   fix_shebang_comment_header(uwlines, style)
-  format_doc_string(uwlines, style)
+  format_doc_strings(uwlines, style)
 
   for uwline in _SingleOrMergedLines(uwlines):
     first_token = uwline.first

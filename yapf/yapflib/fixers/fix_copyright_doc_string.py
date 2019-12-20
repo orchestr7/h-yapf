@@ -27,6 +27,24 @@ class DocString:
                 return True
         return False
 
+    def format_last_quote(self):
+        # will change """a
+        #                b"""
+        # to
+        # """a
+        #    b
+        # """
+
+        # no need to change the line with one-line length
+        if self.length == 1:
+            return
+
+        # if """ or ''' is already moved to next line - there is no need to move
+        if self.lines[-1] == '"""' or self.lines[-1] == "'''":
+            return
+
+        self.token.value = self.token.value[:-3] + '\n' + self.token.value[-3:]
+
     def has_copyright(self):
         return self.check_regex(self.COPYRIGHT)
 
@@ -41,8 +59,7 @@ class DocString:
 
 
 def get_copyright_doc_string(uwlines):
-    uwline_index = 0
-    for line in uwlines:
+    for uwline_index, line in enumerate(uwlines):
         # will check only first tokens as doc string cannot be anything else
         first_token = line.first
 
@@ -52,16 +69,19 @@ def get_copyright_doc_string(uwlines):
 
         if not (first_token.is_comment or first_token.is_import_keyword):
             return None
-
-        uwline_index += 1
     return None
 
 
-def format_doc_string(uwlines, style):
-    if style.Get('FORMAT_DOC_STRING'):
+def format_doc_strings(uwlines, style):
+    if style.Get('FORMAT_COPYRIGHT_DOC_STRING'):
         doc_token = get_copyright_doc_string(uwlines)
         if doc_token:
             doc_token.token.value = '\n'.join(doc_token.lines)
+
+    if style.Get('FORMAT_LAST_QUOTE_DOC_STRING'):
+        for uwline_index, line in enumerate(uwlines):
+            if line.first.is_docstring:
+                DocString(line, uwline_index).format_last_quote()
 
 
 def move_doc_string_to_head(uwlines, style):
