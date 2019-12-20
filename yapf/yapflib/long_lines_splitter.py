@@ -33,28 +33,68 @@ class _LongLinesSplitter(pytree_visitor.PyTreeVisitor):
         for child in node.children:
             self.Visit(child)
 
-        if self._line_should_be_wrapped(node):
-            self._insert_parens(node, 'if', ':')
+        if self._condition_should_be_wrapped(node):
+            self._insert_parens_between(node, 'if', ':')
 
 
     def Visit_while_stmt(self, node):
         for child in node.children:
             self.Visit(child)
 
-        if self._line_should_be_wrapped(node):
-            self._insert_parens(node, 'while', ':')
+        if self._condition_should_be_wrapped(node):
+            self._insert_parens_between(node, 'while', ':')
+
+
+    def Visit_arith_expr(self, node):
+        def child_idx(child):
+            for i, ch in enumerate(child.parent.children):
+                if child is ch:
+                    return i
+
+        if self._arith_expr_should_be_wrapped(node):
+            self_idx = child_idx(node)
+            self._insert_parens(node.parent, self_idx, self_idx)
 
 
     def _line_should_be_wrapped(self, node):
-        """ Return True if the line is longer that COLUMN_LIMIT
-        and not enclosed in parentheses.
-        """
+        """ Return True if a line is longer than COLUMN_LIMIT."""
 
         if self.disabled_lines and node.get_lineno() in self.disabled_lines:
             return False
+        return self._get_line_length(node) > style.Get('COLUMN_LIMIT')
 
-        return (self._get_line_length(node) > style.Get('COLUMN_LIMIT')
-            and not node.children[1].type == syms.atom
+
+    def _condition_should_be_wrapped(self, node):
+        """ Return True if a condition expression is longer than
+        COLUMN_LIMIT and not enclosed in parentheses.
+        """
+
+        # If a condition is enclosed in parentheses then childer will look
+        # like following: [{token if}, {atom}, {lpar} ...]
+        # In this case we need not add extra parentheses.
+        #
+        return (self._line_should_be_wrapped(node)
+            and node.children[1].type != syms.atom
+        )
+
+
+    def _arith_expr_should_be_wrapped(self, node):
+        """ Return True if an arithmetic expression is longer than
+        COLUMN_LIMIT and not enclosed in parentheses.
+        """
+
+        # If an arithmetic statement is already within parentheses,
+        # then the sub-tree will look as follows:
+        #   expr_stmt
+        #     atom
+        #        lpar
+        #        arith_stmt
+        #        rpar
+        #
+        # We should not add parentheses is this case.
+        #
+        return (self._line_should_be_wrapped(node)
+            and node.parent.type == syms.expr_stmt
         )
 
 
@@ -71,9 +111,25 @@ class _LongLinesSplitter(pytree_visitor.PyTreeVisitor):
         assert isinstance(node, pytree.Node)
         return max(traverse(node))
 
+    def _insert_parens_between(self, node, begin_tok, end_tok):
+        """ Insert parentheses between given token names."""
 
-    def _insert_parens(self, node, begin_tok, end_tok):
-        """ Insert parentheses between `begin_tok` and `end_tok`.
+        def iter_leaves(node):
+            for i, child in enumerate(node.children):
+                if isinstance(child, pytree.Leaf):
+                    yield i, child
+
+        first = next(i for i, ch in iter_leaves(node) if ch.value == begin_tok)
+        last = next(i for i, ch in iter_leaves(node) if ch.value == end_tok)
+
+        first += 1
+        last -= 1
+        assert first >= last
+
+        self._insert_parens(node, first, last)
+
+    def _insert_parens(self, node, first_idx, last_idx):
+        """ Insert parentheses around children range [first_idx, last_idx]
 
         For example, this function will change `node` as follows:
 
@@ -103,25 +159,23 @@ class _LongLinesSplitter(pytree_visitor.PyTreeVisitor):
 
         assert isinstance(node, pytree.Node)
 
-        def get_leaves(node):
-            for i, child in enumerate(node.children):
-                if isinstance(child, pytree.Leaf):
-                    yield i, child
+        def get_column(node):
+            if isinstance(node, pytree.Leaf):
+                return node.column
+            return get_column(node.children[0])
 
-        first_idx, first = next(
-            (i, ch) for i, ch in get_leaves(node) if ch.value == begin_tok)
-        last_idx, last = next(
-            (i, ch) for i, ch in get_leaves(node) if ch.value == end_tok)
+        first = node.children[first_idx]
+        last = node.children[last_idx]
 
         lpar = pytree.Leaf(token.LPAR,
-            '(', context=('', (first.get_lineno(), first.column - 1)))
+            '(', context=('', (first.get_lineno(), get_column(first) - 1)))
         rpar = pytree.Leaf(token.RPAR,
-            ')', context=('', (last.get_lineno(), last.column)))
+            ')', context=('', (last.get_lineno(), get_column(last))))
 
         new_node = pytree.Node(syms.atom, [lpar, rpar])
-        children = node.children[first_idx + 1: last_idx]
+        children = node.children[first_idx: last_idx + 1]
         for child in children:
             child.remove()
             new_node.insert_child(1, child)
 
-        node.insert_child(first_idx + 1, new_node)
+        node.insert_child(first_idx, new_node)
