@@ -240,6 +240,9 @@ _STYLE_HELP = dict(
     FORMAT_COPYRIGHT_DOC_STRING=textwrap.dedent("""\
       Replacing indents (lstrip) for a doc string at the top of the source file   
     """),
+    FORMAT_LAST_QUOTE_DOC_STRING=textwrap.dedent("""\
+      Move last quote to the newline if docstring has length more than 1 line 
+    """),
     JOIN_MULTIPLE_LINES=textwrap.dedent("""\
       Join short lines into one line. E.g., single line 'if' statements."""),
     NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=textwrap.dedent("""\
@@ -452,6 +455,7 @@ def CreatePEP8Style():
       FIX_SHEBANG_HEADER=False,
       FORCE_LONG_LINES_WRAPPING=False,
       FORMAT_COPYRIGHT_DOC_STRING=False,
+      FORMAT_LAST_QUOTE_DOC_STRING=False,
       I18N_COMMENT='',
       I18N_FUNCTION_CALL='',
       INDENT_DICTIONARY_VALUE=False,
@@ -520,6 +524,7 @@ def CreateHuaweiStyle():
   style['AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD'] = True
   style['AGGRESSIVELY_MOVE_DOC_STRING_TO_HEAD'] = 'Copyright Information: Huawei'
   style['FORMAT_COPYRIGHT_DOC_STRING'] = True
+  style['FORMAT_LAST_QUOTE_DOC_STRING'] = True
   style['SHOULD_HAVE_ENCODING_HEADER'] = True
   style['NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS'] = '*'
   style['SPLIT_SINGLE_LINE_IMPORTS'] = True
@@ -694,6 +699,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     SAVE_INITIAL_IDENTS_FORMATTING=_BoolConverter,
     FIX_SHEBANG_HEADER=_BoolConverter,
     FORMAT_COPYRIGHT_DOC_STRING=_BoolConverter,
+    FORMAT_LAST_QUOTE_DOC_STRING=_BoolConverter,
     SHOULD_HAVE_ENCODING_HEADER=_BoolConverter,
     SHOULD_NOT_HAVE_WILDCARD_IMPORTS=_BoolConverter,
     SPACE_BETWEEN_ENDING_COMMA_AND_CLOSING_BRACKET=_BoolConverter,

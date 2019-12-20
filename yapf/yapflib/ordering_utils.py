@@ -20,8 +20,6 @@ def move_lines_to_index(uwline_index_to, lineno, uwlines, lines):
     lineno_where_line_was_taken_from = list()
 
     for line in lines:
-        # FixMe PCS-23: optimize removing of line (remove -> filter?)
-        uwlines.remove(line)
         lineno_where_line_was_taken_from.append(line.lineno)
         for token in line.tokens:
             token.node.lineno = lineno
@@ -31,6 +29,9 @@ def move_lines_to_index(uwline_index_to, lineno, uwlines, lines):
             lineno += get_lineno_delta(token)
         # need to update lineno on import lines to have consistency
         lineno += 1
+
+    # filtering moved values and removing them from uwlines
+    uwlines[:] = [line for line in uwlines if line not in lines]
 
     uwlines[uwline_index_to:uwline_index_to] = lines
     return lineno_where_line_was_taken_from
