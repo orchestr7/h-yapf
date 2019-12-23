@@ -160,9 +160,9 @@ def FormatCode(unformatted_source,
 
   uwlines = import_list_splitter.split_import_lists(uwlines)
   uwlines = comment_formatter.format_comments(uwlines)
+  uwlines = _SplitSemicolons(uwlines)
 
-  reformatted_source = reformatter.Reformat(
-      _SplitSemicolons(uwlines), filename, verify, lines)
+  reformatted_source = reformatter.Reformat(uwlines, filename, verify, lines)
 
   if unformatted_source == reformatted_source:
     return '' if print_diff else reformatted_source, False
@@ -227,6 +227,9 @@ def ReadFile(filename, logger=None):
 
 
 def _SplitSemicolons(uwlines):
+  if style.Get('DISABLE_SPLITTING_BY_SEMICOLON'):
+      return uwlines
+
   res = []
   for uwline in uwlines:
     res.extend(uwline.Split())

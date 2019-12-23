@@ -196,6 +196,8 @@ _STYLE_HELP = dict(
     DISABLE_ENDING_COMMA_HEURISTIC=textwrap.dedent("""\
       Disable the heuristic which places each list element on a separate line
       if the list is comma-terminated."""),
+    DISABLE_SPLITTING_BY_SEMICOLON=textwrap.dedent("""\
+      Never split lines by semicolon"""),
     EACH_DICT_ENTRY_ON_SEPARATE_LINE=textwrap.dedent("""\
       Place each dictionary entry onto its own line."""),
     I18N_COMMENT=textwrap.dedent("""\
@@ -455,6 +457,7 @@ def CreatePEP8Style():
       DEDENT_CLOSING_BRACKETS=False,
       INDENT_CLOSING_BRACKETS=False,
       DISABLE_ENDING_COMMA_HEURISTIC=False,
+      DISABLE_SPLITTING_BY_SEMICOLON=False,
       EACH_DICT_ENTRY_ON_SEPARATE_LINE=True,
       FIX_SHEBANG_HEADER=False,
       FORCE_LONG_LINES_WRAPPING=False,
@@ -694,6 +697,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     DEDENT_CLOSING_BRACKETS=_BoolConverter,
     INDENT_CLOSING_BRACKETS=_BoolConverter,
     DISABLE_ENDING_COMMA_HEURISTIC=_BoolConverter,
+    DISABLE_SPLITTING_BY_SEMICOLON=_BoolConverter,
     EACH_DICT_ENTRY_ON_SEPARATE_LINE=_BoolConverter,
     I18N_COMMENT=str,
     I18N_FUNCTION_CALL=_StringListConverter,
