@@ -54,4 +54,4 @@ class WarnTestBase(yapf_test_helper.YAPFTest):
         warns = list(self.__filter_warns(warnno))
         n_warns = len(warns)
         if n_warns != expected:
-            self.fail('The warnings number mismatch: {n_warns} vs {expected}')
+            self.fail(f'The warnings number mismatch: {n_warns} vs {expected}')

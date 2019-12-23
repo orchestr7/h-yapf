@@ -30,9 +30,12 @@ class Warnings(Enum):
     VAR_NAMING_STYLE = 6
     REDEFININED = 7
     COMP_WITH_NONE = 8
+    MODULE_NAMING_STYLE = 9
 
 
 WARNINGS_DESCRIPTION = {
+    Warnings.MODULE_NAMING_STYLE: textwrap.dedent(
+        "Invalid module name: {modname}"),
     Warnings.CLASS_NAMING_STYLE: textwrap.dedent(
         "Invalid class name: {classname}"),
     Warnings.COMP_WITH_NONE: textwrap.dedent(
@@ -58,43 +61,84 @@ WARNINGS_DESCRIPTION = {
 
 
 class Messages:
+    """Contains warnings and their locations. The `set_location()` method
+    allows to generate correctly foramtted messages that refer to the correct
+    position in the output file.
+    """
+
+    class Message:
+        def __init__(self, warn, anchor, kwargs):
+            self.warn = warn
+            self.anchor = anchor
+            self.kwargs = kwargs
+
+        def __repr__(self):
+            return repr(self.__dict__)
+
     def __init__(self, filename):
         self.filename = os.path.basename(filename)
-        self.messages = collections.defaultdict(list)
-        self.line_numbers = dict()
+        self.messages = []
+        self.anchor_locations = dict()
 
-    def add(self, tok, warn, **kwargs):
-        self.messages[id(tok)].append((warn, kwargs))
+    def add(self, anchor, warn, **kwargs):
+        """ Add a message connected to an achor (i.e. some object representing
+        some entity in the source file).
+        """
 
-    def remember_location(self, tok):
-        if tok not in self:
-            self.messages[id(tok)] = []
+        self.add_anchor(anchor)
+        msg = self.Message(warn, anchor, kwargs)
+        self.messages.append(msg)
 
-    def __contains__(self, tok):
-        return id(tok) in self.messages
+    def add_to_file(self, warn, **kwargs):
+        """ Add a message connected to the source file itself."""
 
-    def set_location(self, tok, lineno):
-        self.line_numbers[id(tok)] = lineno
+        self.add(self.filename, warn, **kwargs)
+        self.set_location(self.filename, -1)
+
+    def add_anchor(self, anchor):
+        """ Add an entity which can be referred by a message."""
+
+        self.anchor_locations[anchor] = None
+
+    def __contains__(self, anchor):
+        return anchor in self.anchor_locations
+
+    def set_location(self, anchor, lineno):
+        """ Set the line number of an anchor."""
+
+        self.anchor_locations[anchor] = lineno
 
     def show(self):
-        def format_msg(lineno, warn, kwargs):
-            return (f'WARN {warn.value}: '
-                    f'[filename: {self.filename}, line: {lineno}]: '
-                    f'{WARNINGS_DESCRIPTION[warn]}'.format(**kwargs))
+        """ Print out all saved messages."""
 
-        def handle_callbacks(kwargs):
-            for key, value in args.items():
-                if callable(value):
-                    args[key] = value()
+        messages = sorted(self.messages,
+            key=lambda m: self.get_lineno(m.anchor))
+        for msg in messages:
+            sys.stderr.write('%s\n' % self.__format_msg(msg))
 
-        tokens = sorted(self.line_numbers.items(), key=lambda item: item[1])
-        for tok_id, lineno in tokens:
-            for warn, args in self.messages[tok_id]:
-                handle_callbacks(args)
-                sys.stderr.write('%s\n' % format_msg(lineno, warn, args))
 
-    def get_lineno(self, tok):
-        return self.line_numbers[id(tok)]
+    def __format_msg(self, msg):
+        def apply_callable(value):
+            if callable(value):
+                return value()
+            return value
+
+        lineno = self.get_lineno(msg.anchor)
+        kwargs = {k: apply_callable(v) for k, v in msg.kwargs.items()}
+
+        text = [f'WARN {msg.warn.value}:']
+        if self.anchor_locations[msg.anchor] >= 0:
+            text.append(f'[filename: {self.filename}, line: {lineno}]:')
+        else:
+            text.append(f'[filename: {self.filename}]:')
+        text.append(f'{WARNINGS_DESCRIPTION[msg.warn]}'.format(**kwargs))
+
+        return ' '.join(text)
+
+    def get_lineno(self, anchor):
+        """ Return the location of an anchor."""
+
+        return self.anchor_locations[anchor]
 
 
 # Describes naming style rules, such as
@@ -112,6 +156,11 @@ NAMING_STYLE_REGEXPS = dict(
         PASCALCASE = re.compile(r'((_{0,2}[A-Z][a-zA-Z0-9]+)|(__.*__))$'),
         CAMELCASE = re.compile(r'((_{0,2}[a-z][a-zA-Z0-9]+)|(__.*__))$'),
         SNAKECASE = re.compile(r'((_{0,2}[a-z][a-z0-9_]+)|(__.*__))$'),
+    ),
+    modname = dict(
+        PASCALCASE = re.compile(r'[A-Z_][a-zA-Z0-9]+$'),
+        CAMELCASE = re.compile(r'[a-z_][a-zA-Z0-9]+$'),
+        SNAKECASE = re.compile(r'[a-z_][a-z0-9_]+$'),
     ),
     varname = dict(
         PASCALCASE = re.compile(r'((_{0,2}[A-Z][a-zA-Z0-9]*)|(__.*__))$'),
@@ -132,6 +181,7 @@ def check_all_recommendations(uwlines, style, filename):
 
     warn_redefinition = RedefenitionChecker()
 
+    warn_module_naming_style(messages, filename, style)
     check_first_lines(messages, uwlines, style)
 
     for line in uwlines:
@@ -298,6 +348,23 @@ def warn_func_naming_style(messages, line, style):
                          funcname=funcname_tok.value)
 
 
+def warn_module_naming_style(messages, filename, style):
+    """ Check if module names fit the naming rule."""
+
+    naming_style_name = style.Get('CHECK_MODULE_NAMING_STYLE')
+    if not naming_style_name:
+        return
+
+    # special cases, do nothing
+    if filename in {'<stdin>', '<unknown>'}:
+        return
+
+    naming_style = NAMING_STYLE_REGEXPS['modname'][naming_style_name]
+    modname = os.path.splitext(os.path.basename(filename))[0]
+    if not naming_style.match(modname):
+        messages.add_to_file(Warnings.MODULE_NAMING_STYLE, modname=modname)
+
+
 def warn_vars_naming_style(messages, line, style):
     """ Check whether varibales and function argumens fit the naming rule."""
 
@@ -387,7 +454,7 @@ class RedefenitionChecker:
 
         if name.value in self.__names[scope]:
             first = self.__first_defs[(scope, name.value)]
-            messages.remember_location(first)
+            messages.add_anchor(first)
             messages.add(name, Warnings.REDEFININED, name=name.value,
                 first=partial(messages.get_lineno, first))
 

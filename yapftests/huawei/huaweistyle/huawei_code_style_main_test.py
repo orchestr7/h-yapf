@@ -54,6 +54,11 @@ class RunMainTest(yapf_test_helper.YAPFTest):
         #
         style.SetGlobalStyle(style.CreateHuaweiStyle())
 
+        # resources' filenames do not fit any sound module naming rules
+        # (it starts with a number), disable this option here
+        #
+        style.Set('CHECK_MODULE_NAMING_STYLE', False)
+
     @contextlib.contextmanager
     def subTest(self, msg, **params):
         self.setUpSubtest()

@@ -31,6 +31,11 @@ def Get(setting_name):
   return _style[setting_name]
 
 
+def Set(setting_name, value):
+  """Set a style setting."""
+  _style[setting_name] = value
+
+
 def Help():
   """Return dict mapping style names to help strings."""
   return _STYLE_HELP
@@ -118,6 +123,10 @@ _STYLE_HELP = dict(
       In the last case this check is disabled."""),
     CHECK_FUNC_NAMING_STYLE=textwrap.dedent("""\
       Warn when function definitions do not fit a given naming convention.
+      It can be set to one of 'PascalCase', 'camelCase', 'snake_case', or None.
+      In the last case this check is disabled."""),
+    CHECK_MODULE_NAMING_STYLE=textwrap.dedent("""\
+      Warn when module names do not fit a given naming convention.
       It can be set to one of 'PascalCase', 'camelCase', 'snake_case', or None.
       In the last case this check is disabled."""),
     CHECK_VAR_NAMING_STYLE=textwrap.dedent("""\
@@ -449,6 +458,7 @@ def CreatePEP8Style():
       BLANK_LINES_AFTER_INDENTED_BLOCKS=False,
       CHECK_CLASS_NAMING_STYLE=None,
       CHECK_FUNC_NAMING_STYLE=None,
+      CHECK_MODULE_NAMING_STYLE=None,
       CHECK_VAR_NAMING_STYLE=None,
       COALESCE_BRACKETS=False,
       COLUMN_LIMIT=79,
@@ -549,6 +559,7 @@ def CreateHuaweiStyle():
   style['FIX_SHEBANG_HEADER'] = True
   style['CHECK_CLASS_NAMING_STYLE'] = 'PASCALCASE'
   style['CHECK_FUNC_NAMING_STYLE'] = 'SNAKECASE'
+  style['CHECK_MODULE_NAMING_STYLE'] = 'SNAKECASE'
   style['CHECK_VAR_NAMING_STYLE'] = 'SNAKECASE'
   return style
 
@@ -689,6 +700,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     BLANK_LINES_AROUND_TOP_LEVEL_DEFINITION=int,
     CHECK_CLASS_NAMING_STYLE=_NamingStyleStringConverter,
     CHECK_FUNC_NAMING_STYLE=_NamingStyleStringConverter,
+    CHECK_MODULE_NAMING_STYLE=_NamingStyleStringConverter,
     CHECK_VAR_NAMING_STYLE=_NamingStyleStringConverter,
     COALESCE_BRACKETS=_BoolConverter,
     COLUMN_LIMIT=int,
