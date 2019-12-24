@@ -37,10 +37,10 @@ class RunMainTest(testbase.WarnTestBase):
         FormatCode(input_source)
 
         # one line added becaus the `if` statement was wrapped
-        self.assertWanrMessage(warns.Warnings.VAR_NAMING_STYLE,
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE,
             'line: 3.*SomeVariable')
 
         # two more line added as the style requires two blank lines
         # around top-level functions
-        self.assertWanrMessage(warns.Warnings.VAR_NAMING_STYLE,
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE,
             'line: 13.*OtherVar')

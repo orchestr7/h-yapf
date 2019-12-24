@@ -50,9 +50,9 @@ class RunMainTest(testbase.WarnTestBase):
         """)
         FormatCode(input_source)
 
-        self.assertWanrMessage(warns.Warnings.VAR_NAMING_STYLE, 'PascalCaseVar')
-        self.assertWanrMessage(warns.Warnings.VAR_NAMING_STYLE, 'camelCaseVar')
-        self.assertWanrCount(warns.Warnings.VAR_NAMING_STYLE, 2)
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'PascalCaseVar')
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'camelCaseVar')
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 2)
 
     def test_local_vars(self):
         self.__setup('snake_case')
@@ -66,9 +66,9 @@ class RunMainTest(testbase.WarnTestBase):
         """)
         FormatCode(input_source)
 
-        self.assertWanrMessage(warns.Warnings.VAR_NAMING_STYLE, 'PascalCaseVar')
-        self.assertWanrMessage(warns.Warnings.VAR_NAMING_STYLE, 'camelCaseVar')
-        self.assertWanrCount(warns.Warnings.VAR_NAMING_STYLE, 2)
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'PascalCaseVar')
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'camelCaseVar')
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 2)
 
     def test_func_args(self):
         self.__setup('snake_case')
@@ -79,9 +79,9 @@ class RunMainTest(testbase.WarnTestBase):
         """)
         FormatCode(input_source)
 
-        self.assertWanrMessage(warns.Warnings.VAR_NAMING_STYLE, 'secondArg')
-        self.assertWanrMessage(warns.Warnings.VAR_NAMING_STYLE, 'ThirdArg')
-        self.assertWanrCount(warns.Warnings.VAR_NAMING_STYLE, 2)
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'secondArg')
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'ThirdArg')
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 2)
 
     def test_func_capital_argname(self):
         self.__setup('snake_case')
@@ -93,7 +93,7 @@ class RunMainTest(testbase.WarnTestBase):
         FormatCode(input_source)
 
         # `ARG` is treated here as if it was a constant definition
-        self.assertWanrCount(warns.Warnings.VAR_NAMING_STYLE, 0)
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 0)
 
     def test_class_fields(self):
         self.__setup('snake_case')
@@ -109,6 +109,6 @@ class RunMainTest(testbase.WarnTestBase):
         """)
         FormatCode(input_source)
 
-        self.assertWanrMessage(warns.Warnings.VAR_NAMING_STYLE, 'PascalCaseStatic')
-        self.assertWanrMessage(warns.Warnings.VAR_NAMING_STYLE, 'camelCase')
-        self.assertWanrCount(warns.Warnings.VAR_NAMING_STYLE, 2)
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'PascalCaseStatic')
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'camelCase')
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 2)

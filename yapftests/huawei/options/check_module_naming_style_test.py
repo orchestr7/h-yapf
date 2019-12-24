@@ -43,5 +43,5 @@ class RunMainTest(testbase.WarnTestBase):
 
         FormatCode('', filename='ModuleName.py')
 
-        self.assertWanrMessage(warns.Warnings.MODULE_NAMING_STYLE, 'ModuleName')
-        self.assertWanrCount(warns.Warnings.MODULE_NAMING_STYLE, 1)
+        self.assertWarnMessage(warns.Warnings.MODULE_NAMING_STYLE, 'ModuleName')
+        self.assertWarnCount(warns.Warnings.MODULE_NAMING_STYLE, 1)

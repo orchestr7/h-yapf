@@ -39,7 +39,7 @@ class WarnTestBase(yapf_test_helper.YAPFTest):
         return filter(check_warnno, self._stderr.messages)
 
 
-    def assertWanrMessage(self, warnno, pattern):
+    def assertWarnMessage(self, warnno, pattern):
         def check_msg(warn):
             return re.search(pattern, warn)
 
@@ -50,7 +50,7 @@ class WarnTestBase(yapf_test_helper.YAPFTest):
             self.fail(f'No such message: warn={warnno} patern="{pattern}"')
 
 
-    def assertWanrCount(self, warnno, expected):
+    def assertWarnCount(self, warnno, expected):
         warns = list(self.__filter_warns(warnno))
         n_warns = len(warns)
         if n_warns != expected:
