@@ -33,6 +33,7 @@ class Warnings(Enum):
     MODULE_NAMING_STYLE = 9
     SCRIPT_CODE_ENCAPSULATION = 10
     BARE_EXCEPT = 11
+    LOST_EXCEPTION = 12
 
 
 WARNINGS_DESCRIPTION = {
@@ -50,6 +51,8 @@ WARNINGS_DESCRIPTION = {
     Warnings.GLOBAL_VAR_COMMENT: textwrap.dedent(
         "Global variable {variable} has missing detailed comment for it"
     ),
+    Warnings.LOST_EXCEPTION: textwrap.dedent(
+        "'{stmt}' in finally block may swallow exception"),
     Warnings.MODULE_NAMING_STYLE: textwrap.dedent(
         "Invalid module name: {modname}"),
     Warnings.REDEFININED: textwrap.dedent(
@@ -203,6 +206,7 @@ def check_all_recommendations(uwlines, style, filename):
         warn_incorrect_comparison_with_none(messages, line, style)
         warn_not_properly_encapsulated(line, prev_line, style)
         warn_bare_except_clauses(messages, line, style)
+        warn_lost_exception(messages, line, style)
         prev_line = line
 
     warn_not_properly_encapsulated.end(messages)
@@ -592,3 +596,48 @@ def warn_bare_except_clauses(messages, line, style):
 
     if is_exception_handler(line) and lack_exception_type(line):
         messages.add(line.first, Warnings.BARE_EXCEPT)
+
+
+def warn_lost_exception(messages, line, style):
+    if not style.Get('WARN_LOST_EXCEPTIONS'):
+        return
+
+    if not (line.tokens and line.first.value in {'return', 'break'}):
+        return
+
+    def get_child_index(node):
+        for i, ch in enumerate(node.parent.children):
+            if ch is node:
+                return i
+
+    def get_name_on_the_left(node):
+        idx = get_child_index(node)
+        for ch in reversed(node.parent.children[:idx]):
+            if ch.type == token.NAME:
+                return ch.value
+
+        return None
+
+    # Currently we ignore return/break statements in any nested stuctures
+    # for simplicity. The reason is that in some case these statements
+    # might not lead outse the final block:
+    #
+    #    try:
+    #        pass
+    #    finally:
+    #        while True:
+    #            break
+    #
+    def is_in_finally_block(node):
+        if node.parent is None:
+            return False
+
+        if node.type == syms.suite:
+            left_name = get_name_on_the_left(node)
+            return left_name == 'finally'
+
+        return is_in_finally_block(node.parent)
+
+    if is_in_finally_block(line.first.node):
+        messages.add(line.first, Warnings.LOST_EXCEPTION,
+            stmt=line.first.value)

@@ -445,6 +445,9 @@ _STYLE_HELP = dict(
       """),
     WARN_INCORRECT_COMPARISON_WITH_NONE=textwrap.dedent("""\
       Operator `is` should be used when compare with None."""),
+    WARN_LOST_EXCEPTIONS=textwrap.dedent("""\
+      Warn if `return` or `break` statements are used in a `finally` block,
+      since they may silently swallow an exception."""),
     WARN_NOT_COMMENTED_GLOBAL_VARS=textwrap.dedent("""\
       Warn when a global variable definition is not accompanied by a
       commentary"""),
@@ -529,6 +532,7 @@ def CreatePEP8Style():
       SHOULD_NOT_HAVE_WILDCARD_IMPORTS=False,
       WARN_BARE_EXCEPT_CLAUSES=False,
       WARN_INCORRECT_COMPARISON_WITH_NONE=False,
+      WARN_LOST_EXCEPTIONS=False,
       WARN_NOT_COMMENTED_GLOBAL_VARS=False,
       WARN_REDEFINITION=False,
   )
@@ -570,6 +574,7 @@ def CreateHuaweiStyle():
   style['SHOULD_NOT_HAVE_WILDCARD_IMPORTS'] = True
   style['WARN_BARE_EXCEPT_CLAUSES'] = True
   style['WARN_INCORRECT_COMPARISON_WITH_NONE'] = True
+  style['WARN_LOST_EXCEPTIONS'] = True
   style['WARN_NOT_COMMENTED_GLOBAL_VARS'] = True
   style['WARN_REDEFINITION'] = True
   style['FIX_SHEBANG_HEADER'] = True
@@ -775,6 +780,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     USE_TABS=_BoolConverter,
     WARN_BARE_EXCEPT_CLAUSES=_BoolConverter,
     WARN_INCORRECT_COMPARISON_WITH_NONE=_BoolConverter,
+    WARN_LOST_EXCEPTIONS=_BoolConverter,
     WARN_NOT_COMMENTED_GLOBAL_VARS=_BoolConverter,
     WARN_REDEFINITION=_BoolConverter,
 )
