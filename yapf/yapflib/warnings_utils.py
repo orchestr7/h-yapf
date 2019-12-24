@@ -34,6 +34,7 @@ class Warnings(Enum):
     SCRIPT_CODE_ENCAPSULATION = 10
     BARE_EXCEPT = 11
     LOST_EXCEPTION = 12
+    MISPLACED_BARE_RAISE = 13
 
 
 WARNINGS_DESCRIPTION = {
@@ -53,6 +54,8 @@ WARNINGS_DESCRIPTION = {
     ),
     Warnings.LOST_EXCEPTION: textwrap.dedent(
         "'{stmt}' in finally block may swallow exception"),
+    Warnings.MISPLACED_BARE_RAISE: textwrap.dedent(
+        "The raise statement is not inside an except clause"),
     Warnings.MODULE_NAMING_STYLE: textwrap.dedent(
         "Invalid module name: {modname}"),
     Warnings.REDEFININED: textwrap.dedent(
@@ -207,6 +210,7 @@ def check_all_recommendations(uwlines, style, filename):
         warn_not_properly_encapsulated(line, prev_line, style)
         warn_bare_except_clauses(messages, line, style)
         warn_lost_exception(messages, line, style)
+        warn_misplaced_bare_raise(messages, line, style)
         prev_line = line
 
     warn_not_properly_encapsulated.end(messages)
@@ -598,25 +602,36 @@ def warn_bare_except_clauses(messages, line, style):
         messages.add(line.first, Warnings.BARE_EXCEPT)
 
 
+def _is_on_the_right_of(node, target):
+    def get_child_index(node):
+        for i, ch in enumerate(node.parent.children):
+            if ch is node:
+                return i
+
+    def by_name():
+        for ch in reversed(node.parent.children[:idx]):
+            if ch.type == token.NAME:
+                return ch.value == target
+        return False
+
+    def by_type():
+        for ch in reversed(node.parent.children[:idx]):
+            if ch.type == target:
+                return True
+        return False
+
+    idx = get_child_index(node)
+    if isinstance(target, str):
+        return by_name()
+    return by_type()
+
+
 def warn_lost_exception(messages, line, style):
     if not style.Get('WARN_LOST_EXCEPTIONS'):
         return
 
     if not (line.tokens and line.first.value in {'return', 'break'}):
         return
-
-    def get_child_index(node):
-        for i, ch in enumerate(node.parent.children):
-            if ch is node:
-                return i
-
-    def get_name_on_the_left(node):
-        idx = get_child_index(node)
-        for ch in reversed(node.parent.children[:idx]):
-            if ch.type == token.NAME:
-                return ch.value
-
-        return None
 
     # Currently we ignore return/break statements in any nested stuctures
     # for simplicity. The reason is that in some case these statements
@@ -633,11 +648,32 @@ def warn_lost_exception(messages, line, style):
             return False
 
         if node.type == syms.suite:
-            left_name = get_name_on_the_left(node)
-            return left_name == 'finally'
+            return _is_on_the_right_of(node, 'finally')
 
         return is_in_finally_block(node.parent)
 
     if is_in_finally_block(line.first.node):
         messages.add(line.first, Warnings.LOST_EXCEPTION,
             stmt=line.first.value)
+
+
+def warn_misplaced_bare_raise(messages, line, style):
+    if not style.Get('WARN_MISPLACED_BARE_RAISE'):
+        return
+
+    if not (line.tokens and line.first.value == 'raise'):
+        return
+
+    def is_in_except_clause(node):
+        if node.parent is None:
+            return False
+
+        if node.type == syms.suite and node.parent.type == syms.try_stmt:
+            return (_is_on_the_right_of(node, 'except')
+                or _is_on_the_right_of(node, syms.except_clause)
+            )
+
+        return is_in_except_clause(node.parent)
+
+    if not is_in_except_clause(line.first.node) and len(line.tokens) == 1:
+        messages.add(line.first, Warnings.MISPLACED_BARE_RAISE)
