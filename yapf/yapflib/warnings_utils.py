@@ -32,11 +32,12 @@ class Warnings(Enum):
     COMP_WITH_NONE = 8
     MODULE_NAMING_STYLE = 9
     SCRIPT_CODE_ENCAPSULATION = 10
+    BARE_EXCEPT = 11
 
 
 WARNINGS_DESCRIPTION = {
-    Warnings.MODULE_NAMING_STYLE: textwrap.dedent(
-        "Invalid module name: {modname}"),
+    Warnings.BARE_EXCEPT: textwrap.dedent(
+        "No exception type(s) specified."),
     Warnings.CLASS_NAMING_STYLE: textwrap.dedent(
         "Invalid class name: {classname}"),
     Warnings.COMP_WITH_NONE: textwrap.dedent(
@@ -49,6 +50,8 @@ WARNINGS_DESCRIPTION = {
     Warnings.GLOBAL_VAR_COMMENT: textwrap.dedent(
         "Global variable {variable} has missing detailed comment for it"
     ),
+    Warnings.MODULE_NAMING_STYLE: textwrap.dedent(
+        "Invalid module name: {modname}"),
     Warnings.REDEFININED: textwrap.dedent(
         "'{name}' already defined here: lineno={first}"
     ),
@@ -199,6 +202,7 @@ def check_all_recommendations(uwlines, style, filename):
         warn_redefinition(messages, line, style)
         warn_incorrect_comparison_with_none(messages, line, style)
         warn_not_properly_encapsulated(line, prev_line, style)
+        warn_bare_except_clauses(messages, line, style)
         prev_line = line
 
     warn_not_properly_encapsulated.end(messages)
@@ -571,3 +575,20 @@ class ScriptsCodeIncapsulationChecker:
     def end(self, messages):
         if self.can_be_executed and not self.checks_for_main:
             messages.add_to_file(Warnings.SCRIPT_CODE_ENCAPSULATION)
+
+
+def warn_bare_except_clauses(messages, line, style):
+    if not style.Get('WARN_BARE_EXCEPT_CLAUSES'):
+        return
+
+    def is_exception_handler(line):
+        return (line.tokens
+            and line.first.is_keyword
+            and line.first.value == 'except'
+        )
+
+    def lack_exception_type(line):
+        return not any(tok.is_name for tok in line.tokens)
+
+    if is_exception_handler(line) and lack_exception_type(line):
+        messages.add(line.first, Warnings.BARE_EXCEPT)
