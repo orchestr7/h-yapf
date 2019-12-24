@@ -15,7 +15,7 @@ from yapftests.huawei.options import testbase
 class RunMainTest(testbase.WarnTestBase):
     def __check_test(self, positive_case, formatted_code, option):
         style.SetGlobalStyle(
-            style.CreateStyleFromConfig(f"{{based_on_style: huawei "
+            style.CreateStyleFromConfig(f"{{based_on_style: pep8 "
                                         f"{option}: "
                                         f"{positive_case}}}"))
         unformatted_code = textwrap.dedent("""\

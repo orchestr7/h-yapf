@@ -31,6 +31,7 @@ class Warnings(Enum):
     REDEFININED = 7
     COMP_WITH_NONE = 8
     MODULE_NAMING_STYLE = 9
+    SCRIPT_CODE_ENCAPSULATION = 10
 
 
 WARNINGS_DESCRIPTION = {
@@ -50,6 +51,10 @@ WARNINGS_DESCRIPTION = {
     ),
     Warnings.REDEFININED: textwrap.dedent(
         "'{name}' already defined here: lineno={first}"
+    ),
+    Warnings.SCRIPT_CODE_ENCAPSULATION: textwrap.dedent(
+        "All top-level code should be encapsulated in functions or classes. "
+        "Wrap it into `if __name__ == '__main__'` block."
     ),
     Warnings.VAR_NAMING_STYLE: textwrap.dedent(
         "Invalid variable name: {variable}"),
@@ -180,6 +185,7 @@ def check_all_recommendations(uwlines, style, filename):
     messages = Messages(filename)
 
     warn_redefinition = RedefenitionChecker()
+    warn_not_properly_encapsulated = ScriptsCodeIncapsulationChecker()
 
     warn_module_naming_style(messages, filename, style)
     check_first_lines(messages, uwlines, style)
@@ -192,7 +198,10 @@ def check_all_recommendations(uwlines, style, filename):
         warn_vars_naming_style(messages, line, style)
         warn_redefinition(messages, line, style)
         warn_incorrect_comparison_with_none(messages, line, style)
+        warn_not_properly_encapsulated(line, prev_line, style)
         prev_line = line
+
+    warn_not_properly_encapsulated.end(messages)
 
     return messages
 
@@ -264,7 +273,7 @@ def _is_global_var_definition(uwl):
 
 
 def _is_comment_line(uwl):
-    """ Check if a line is a comment contaning soething else apart from
+    """ Check if a line is a comment contaning something else apart from
     shebang or encoding definition.
     """
 
@@ -527,3 +536,38 @@ def warn_incorrect_comparison_with_none(messages, line, style):
             add_warn(op, right)
         if right.value == 'None':
             add_warn(op, left)
+
+
+class ScriptsCodeIncapsulationChecker:
+    stmt = re.compile(
+        r'if[\\\s(]+__name__[\s\\]*==[\s\\]*[\'"]__main__[\'"][\\\s)]*:')
+
+    def __init__(self):
+        self.can_be_executed = False
+        self.checks_for_main = False
+
+    def __call__(self, line, prev_line, style):
+        if not style.Get('CHECK_SCRIPT_CODE_ENCAPSULATION'):
+            return
+
+        if prev_line is None:
+            if (line.tokens
+                and line.is_comment
+                and line.first.value.startswith('#!')):
+                self.can_be_executed = True
+
+        elif not self.can_be_executed:
+            return
+
+        elif not self.checks_for_main:
+            self.checks_for_main = self.__check_for_main(line)
+
+    def __check_for_main(self, line):
+        if line.tokens and line.first.is_keyword and line.first.value == 'if':
+            return self.stmt.match(str(line)) is not None
+
+        return False
+
+    def end(self, messages):
+        if self.can_be_executed and not self.checks_for_main:
+            messages.add_to_file(Warnings.SCRIPT_CODE_ENCAPSULATION)

@@ -16,3 +16,7 @@ some_func()
 
 #!/usr/bin/python
 VAR5 = 5000
+
+
+if __name__ == '__main__':
+    pass

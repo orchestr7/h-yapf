@@ -129,6 +129,16 @@ _STYLE_HELP = dict(
       Warn when module names do not fit a given naming convention.
       It can be set to one of 'PascalCase', 'camelCase', 'snake_case', or None.
       In the last case this check is disabled."""),
+    CHECK_SCRIPT_CODE_ENCAPSULATION=textwrap.dedent("""\
+      Top-level code should be encapsulated into functions or classes.
+      It is recommended that `if __name__ == '__main__'` be checked in scripts.
+
+          def main():
+              pass
+
+          if __name__ == '__main__':
+              main()
+      """),
     CHECK_VAR_NAMING_STYLE=textwrap.dedent("""\
       Warn when variable definitions or function arguments do not fit
       a given naming convention.
@@ -459,6 +469,7 @@ def CreatePEP8Style():
       CHECK_CLASS_NAMING_STYLE=None,
       CHECK_FUNC_NAMING_STYLE=None,
       CHECK_MODULE_NAMING_STYLE=None,
+      CHECK_SCRIPT_CODE_ENCAPSULATION=False,
       CHECK_VAR_NAMING_STYLE=None,
       COALESCE_BRACKETS=False,
       COLUMN_LIMIT=79,
@@ -561,6 +572,7 @@ def CreateHuaweiStyle():
   style['CHECK_FUNC_NAMING_STYLE'] = 'SNAKECASE'
   style['CHECK_MODULE_NAMING_STYLE'] = 'SNAKECASE'
   style['CHECK_VAR_NAMING_STYLE'] = 'SNAKECASE'
+  style['CHECK_SCRIPT_CODE_ENCAPSULATION'] = True
   return style
 
 
@@ -701,6 +713,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     CHECK_CLASS_NAMING_STYLE=_NamingStyleStringConverter,
     CHECK_FUNC_NAMING_STYLE=_NamingStyleStringConverter,
     CHECK_MODULE_NAMING_STYLE=_NamingStyleStringConverter,
+    CHECK_SCRIPT_CODE_ENCAPSULATION=_BoolConverter,
     CHECK_VAR_NAMING_STYLE=_NamingStyleStringConverter,
     COALESCE_BRACKETS=_BoolConverter,
     COLUMN_LIMIT=int,

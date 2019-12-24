@@ -13,3 +13,7 @@ def format_file(filename,
                 logger=None):
     """Format a single Python file and return the formatted code."""
     print("this code works!")
+
+
+if __name__ == '__main__':
+    pass
