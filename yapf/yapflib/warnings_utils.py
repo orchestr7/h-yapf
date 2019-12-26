@@ -526,29 +526,39 @@ def warn_incorrect_comparison_with_none(messages, line, style):
     if not style.Get('WARN_INCORRECT_COMPARISON_WITH_NONE'):
         return
 
+    def to_string(node):
+        if isinstance(node, pytree.Leaf):
+            return node.value
+        else:
+            return ''.join(l.value for l in node.leaves())
+
     def find_comp_exprs(line):
         for tok in line.tokens:
             if tok.is_binary_op and tok.value in {'==', '!='}:
                 left = tok.node.prev_sibling
                 right = tok.node.next_sibling
-                assert type(left) == type(right)
 
-                # ignore any compound operands (e.g. tuples)
-                if isinstance(left, pytree.Leaf):
+                # Ignore any compound operands (e.g. tuples)
+                # is this case both operands would be `pytree.Node`.
+                # `None` is always a `pytree.Leaf`, but the second operand
+                # may not be if, for excample, it is a function call.
+
+                if (isinstance(left, pytree.Leaf)
+                    or isinstance(right, pytree.Leaf)):
                     yield left, tok, right
 
     def add_warn(op, operand):
         if op.value == '==':
             messages.add(op, Warnings.COMP_WITH_NONE,
-                         var=operand.value, op='is')
+                         var=to_string(operand), op='is')
         elif op.value == '!=':
             messages.add(op, Warnings.COMP_WITH_NONE,
-                         var=operand.value, op='is not')
+                         var=to_string(operand), op='is not')
 
     for left, op, right in find_comp_exprs(line):
-        if left.value == 'None':
+        if isinstance(left, pytree.Leaf) and left.value == 'None':
             add_warn(op, right)
-        if right.value == 'None':
+        if isinstance(right, pytree.Leaf) and right.value == 'None':
             add_warn(op, left)
 
 
