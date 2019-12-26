@@ -521,6 +521,8 @@ class RedefenitionChecker:
 
 
 def warn_incorrect_comparison_with_none(messages, line, style):
+    """ Warn when a comaprison to none uses `==` operator."""
+
     if not style.Get('WARN_INCORRECT_COMPARISON_WITH_NONE'):
         return
 
@@ -551,6 +553,11 @@ def warn_incorrect_comparison_with_none(messages, line, style):
 
 
 class ScriptsCodeIncapsulationChecker:
+    """ Check whether a script uses `__name__ == '__main__' test.
+    Here we assume that this check should be done whenever a file
+    contains shebang, i.e. is designed to be exectuted directly.
+    """
+
     stmt = re.compile(
         r'if[\\\s(]+__name__[\s\\]*==[\s\\]*[\'"]__main__[\'"][\\\s)]*:')
 
@@ -586,6 +593,8 @@ class ScriptsCodeIncapsulationChecker:
 
 
 def warn_bare_except_clauses(messages, line, style):
+    """ Check if code uses bare `except` clauses."""
+
     if not style.Get('WARN_BARE_EXCEPT_CLAUSES'):
         return
 
@@ -627,6 +636,9 @@ def _is_on_the_right_of(node, target):
 
 
 def warn_lost_exception(messages, line, style):
+    """ Warn if a return / break statement is executed from within
+    a finally block."""
+
     if not style.Get('WARN_LOST_EXCEPTIONS'):
         return
 
@@ -658,6 +670,9 @@ def warn_lost_exception(messages, line, style):
 
 
 def warn_misplaced_bare_raise(messages, line, style):
+    """ Check if all `raise` statements that do not specify an exception
+    are called in `except` clauses."""
+
     if not style.Get('WARN_MISPLACED_BARE_RAISE'):
         return
 
