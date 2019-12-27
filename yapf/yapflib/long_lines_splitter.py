@@ -13,9 +13,9 @@ from . import pytree_visitor
 from . import style
 
 
-def SplitLongLines(tree, disabled_lines):
+def SplitLongLines(tree, enabled_lines):
   if style.Get('FORCE_LONG_LINES_WRAPPING'):
-      splitter = _LongLinesSplitter(disabled_lines)
+      splitter = _LongLinesSplitter(enabled_lines)
       splitter.Visit(tree)
 
 
@@ -24,9 +24,9 @@ class _LongLinesSplitter(pytree_visitor.PyTreeVisitor):
     wrapped at later steps with respect to COLUMN_LIMIT.
     """
 
-    def __init__(self, disabled_lines):
+    def __init__(self, enabled_lines):
         super().__init__()
-        self.disabled_lines = disabled_lines
+        self.enabled_lines = enabled_lines
 
        
     def Visit_if_stmt(self, node):
@@ -59,7 +59,7 @@ class _LongLinesSplitter(pytree_visitor.PyTreeVisitor):
     def _line_should_be_wrapped(self, node):
         """ Return True if a line is longer than COLUMN_LIMIT."""
 
-        if self.disabled_lines and node.get_lineno() in self.disabled_lines:
+        if self.enabled_lines and node.get_lineno() not in self.enabled_lines:
             return False
 
         column_limit = style.Get('COLUMN_LIMIT')

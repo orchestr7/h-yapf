@@ -136,7 +136,7 @@ def FormatCode(unformatted_source,
     e.msg = filename + ': ' + e.msg
     raise
 
-  # disabled lines
+  # disable lines outside the --lines range
   lines = _LineRangesToSet(lines)
 
   # Run passes on the tree, modifying it in place.
