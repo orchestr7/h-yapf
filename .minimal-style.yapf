@@ -1,0 +1,6 @@
+[style]
+
+based_on_style=pep8
+column_limit = 0
+save_initial_idents_formatting = true
+disable_splitting_by_semicolon = true
