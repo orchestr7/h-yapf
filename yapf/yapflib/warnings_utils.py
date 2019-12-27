@@ -177,9 +177,9 @@ NAMING_STYLE_REGEXPS = dict(
         SNAKECASE = re.compile(r'[a-z_][a-z0-9_]+$'),
     ),
     varname = dict(
-        PASCALCASE = re.compile(r'((_{0,2}[A-Z][a-zA-Z0-9]*)|(__.*__))$'),
-        CAMELCASE = re.compile(r'((_{0,2}[a-z][a-zA-Z0-9]*)|(__.*__))$'),
-        SNAKECASE = re.compile(r'((_{0,2}[a-z][a-z0-9_]*)|(__.*__))$'),
+        PASCALCASE = re.compile(r'((_{0,2}[A-Z][a-zA-Z0-9]*)|(__.*__)|(_))$'),
+        CAMELCASE = re.compile(r'((_{0,2}[a-z][a-zA-Z0-9]*)|(__.*__)|(_))$'),
+        SNAKECASE = re.compile(r'((_{0,2}[a-z][a-z0-9_]*)|(__.*__)|(_))$'),
     ),
 )
 
