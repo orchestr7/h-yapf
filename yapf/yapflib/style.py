@@ -692,14 +692,15 @@ def _IntOrIntListConverter(s):
 
 
 def _NamingStyleStringConverter(s):
-    accepted_styles = {'PASCALCASE', 'CAMELCASE', 'SNAKECASE'}
+    accepted_styles = {'PASCALCASE', 'CAMELCASE', 'SNAKECASE', 'NONE'}
 
     if s:
         s = s.strip('"\'').replace('_', '').replace('-', '').upper()
 
         if s not in accepted_styles:
             raise ValueError('unknown naming style: %s' % s)
-        return s
+        if s != 'NONE':
+            return s
 
     return None
 
