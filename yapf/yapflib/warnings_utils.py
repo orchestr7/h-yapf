@@ -190,8 +190,10 @@ encoding_regex = re.compile('^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
 def check_all_recommendations(uwlines, style, filename):
     # FixMe: will need to reduce the number of usages of this method when chosen
     # FixME: style does not need these warnings (affecting performance)
-    prev_line = None
+
     messages = Messages(filename)
+    if style.Get('DISABLE_ALL_WARNINGS'):
+        return messages
 
     warn_redefinition = RedefenitionChecker()
     warn_not_properly_encapsulated = ScriptsCodeIncapsulationChecker()
@@ -199,6 +201,7 @@ def check_all_recommendations(uwlines, style, filename):
     warn_module_naming_style(messages, filename, style)
     check_first_lines(messages, uwlines, style)
 
+    prev_line = None
     for line in uwlines:
         warn_wildcard_imports(messages, line, style)
         warn_if_global_vars_not_commented(messages, line, prev_line, style)

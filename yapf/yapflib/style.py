@@ -212,6 +212,8 @@ _STYLE_HELP = dict(
             start_ts=now()-timedelta(days=3),
             end_ts=now(),
             )        # <--- this bracket is indented and on a separate line"""),
+    DISABLE_ALL_WARNINGS=textwrap.dedent("""\
+       Disable all static checks and warning messages."""),
     DISABLE_ENDING_COMMA_HEURISTIC=textwrap.dedent("""\
       Disable the heuristic which places each list element on a separate line
       if the list is comma-terminated."""),
@@ -485,6 +487,7 @@ def CreatePEP8Style():
       CONTINUATION_INDENT_WIDTH=4,
       DEDENT_CLOSING_BRACKETS=False,
       INDENT_CLOSING_BRACKETS=False,
+      DISABLE_ALL_WARNINGS=False,
       DISABLE_ENDING_COMMA_HEURISTIC=False,
       DISABLE_SPLITTING_BY_SEMICOLON=False,
       EACH_DICT_ENTRY_ON_SEPARATE_LINE=True,
@@ -735,6 +738,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     CONTINUATION_INDENT_WIDTH=int,
     DEDENT_CLOSING_BRACKETS=_BoolConverter,
     INDENT_CLOSING_BRACKETS=_BoolConverter,
+    DISABLE_ALL_WARNINGS=_BoolConverter,
     DISABLE_ENDING_COMMA_HEURISTIC=_BoolConverter,
     DISABLE_SPLITTING_BY_SEMICOLON=_BoolConverter,
     EACH_DICT_ENTRY_ON_SEPARATE_LINE=_BoolConverter,
