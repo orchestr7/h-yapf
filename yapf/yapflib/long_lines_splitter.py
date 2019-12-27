@@ -61,7 +61,9 @@ class _LongLinesSplitter(pytree_visitor.PyTreeVisitor):
 
         if self.disabled_lines and node.get_lineno() in self.disabled_lines:
             return False
-        return self._get_line_length(node) > style.Get('COLUMN_LIMIT')
+
+        column_limit = style.Get('COLUMN_LIMIT')
+        return column_limit and self._get_line_length(node) > column_limit
 
 
     def _condition_should_be_wrapped(self, node):

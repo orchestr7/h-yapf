@@ -162,7 +162,7 @@ _STYLE_HELP = dict(
              'key2': 'value2',
          })"""),
     COLUMN_LIMIT=textwrap.dedent("""\
-      The column limit."""),
+      The column limit. Never split / merge lines if set to 0."""),
     CONTINUATION_ALIGN_STYLE=textwrap.dedent("""\
       The style for continuation alignment. Possible values are:
 

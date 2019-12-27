@@ -56,6 +56,7 @@ def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
   final_lines = []
   prev_uwline = None  # The previous line.
   indent_width = style.Get('INDENT_WIDTH')
+  keep_line_splits = style.Get('COLUMN_LIMIT') == 0
 
   # special checks for a format of a header that can produce warnings
   messages = warns.check_all_recommendations(uwlines, style, filename)
@@ -86,6 +87,9 @@ def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
     if uwline.disable or _LineHasContinuationMarkers(uwline):
       _RetainHorizontalSpacing(uwline)
       _RetainRequiredVerticalSpacing(uwline, prev_uwline, lines)
+      _EmitLineUnformatted(state)
+
+    elif keep_line_splits:
       _EmitLineUnformatted(state)
 
     elif (_LineContainsPylintDisableLineTooLong(uwline) or

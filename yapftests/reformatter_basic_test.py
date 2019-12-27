@@ -24,9 +24,7 @@ from yapftests import yapf_test_helper
 
 
 class BasicReformatterTest(yapf_test_helper.YAPFTest):
-
-  @classmethod
-  def setUpClass(cls):
+  def setUp(cls):
     style.SetGlobalStyle(style.CreateChromiumStyle())
 
   def testSplittingAllArgs(self):
@@ -2943,6 +2941,17 @@ class A:
 """
     uwlines = yapf_test_helper.ParseAndUnwrap(unformatted_code)
     self.assertCodeEqual(expected_formatted_code, reformatter.Reformat(uwlines))
+
+  def testNoResplit(self):
+        style.Set('COLUMN_LIMIT', 0)
+        unformatted_code = textwrap.dedent("""\
+              responseDict = {
+                  'a': 1,
+                  'b': 2
+              }
+              """)
+        uwlines = yapf_test_helper.ParseAndUnwrap(unformatted_code)
+        self.assertCodeEqual(unformatted_code, reformatter.Reformat(uwlines))
 
 
 if __name__ == '__main__':

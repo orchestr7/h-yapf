@@ -78,3 +78,17 @@ class RunMainTest(yapf_test_helper.YAPFTest):
         """)
 
         self.assertCodeEqual(expected_text, output_text)
+
+    def test_no_wrapping(self):
+        self.__setup_import_splitter(True, column_limit=0)
+
+        input_text = textwrap.dedent("""\
+            variable = var1 + var2 * (var3 - var4)
+        """)
+        output_text = FormatCode(input_text)[0]
+
+        expected_text = textwrap.dedent("""\
+            variable = var1 + var2 * (var3 - var4)
+        """)
+
+        self.assertCodeEqual(expected_text, output_text)
