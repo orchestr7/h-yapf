@@ -432,7 +432,19 @@ def warn_vars_naming_style(messages, line, style):
             tokens = iter_token_range(item.first_token, item.last_token)
             tokens = filter(lambda t: t.name in {'NAME', 'STAR'}, tokens)
             first = next(tokens, None)
-            assert first is not None
+
+            if first is None:
+                # This is possible when a comment is added to a function
+                # argument (in some cases, when there is a trailing comma):
+                #
+                #     def fn(arg1,
+                #         arg2, #comment
+                #         arg3,
+                #         ):
+                #         pass
+                #
+                assert item.first_token.name == 'COMMENT'
+                continue
             if first.name == 'STAR':
                 yield next(tokens, first)
             yield first
