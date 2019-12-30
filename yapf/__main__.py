@@ -14,5 +14,14 @@
 """Main entry point."""
 # pylint: disable=invalid-name
 import yapf
+import sys
+
+# this code is needed for Windows OS to have normal multiprocessing working
+# in case when YAPF will be build and distributed as executable (.exe) file
+# using pyinstaller. Otherwise it will fail with unrecognized option
+# See: https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
+if sys.platform.upper().startswith('WIN'):
+    import multiprocessing
+    multiprocessing.freeze_support()
 
 yapf.run_main()
