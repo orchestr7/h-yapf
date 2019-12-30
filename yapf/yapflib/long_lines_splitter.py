@@ -10,6 +10,7 @@ from lib2to3.pgen2 import token
 from lib2to3.pygram import python_symbols as syms
 
 from . import pytree_visitor
+from . import pytree_utils
 from . import style
 
 
@@ -71,12 +72,26 @@ class _LongLinesSplitter(pytree_visitor.PyTreeVisitor):
         COLUMN_LIMIT and not enclosed in parentheses.
         """
 
+        def is_comment_node(node):
+            return (isinstance(node, pytree.Node)
+                    and pytree_utils.IsCommentStatement(node))
+
+        def has_parens(node):
+            children = filter(lambda c: not is_comment_node(c), node.children)
+            children = list(children)
+
+            assert children[0].value in {'if', 'while'}
+            return (len(children) >= 2
+                    and children[1].type == syms.atom
+                    and children[2].type == token.COLON)
+
+
         # If a condition is enclosed in parentheses then childer will look
         # like following: [{token if}, {atom}, {lpar} ...]
         # In this case we need not add extra parentheses.
         #
         return (self._line_should_be_wrapped(node)
-            and node.children[1].type != syms.atom
+            and not has_parens(node)
         )
 
 
@@ -104,7 +119,10 @@ class _LongLinesSplitter(pytree_visitor.PyTreeVisitor):
         def traverse(node):
             for child in node.children:
                 if isinstance(child, pytree.Leaf):
-                    yield child.column + len(child.value.rstrip())
+                    if pytree_utils.NodeName(child) == 'COMMENT':
+                        continue
+                    else:
+                        yield child.column + len(child.value.rstrip())
                 elif node.type == syms.suite:  # the beginning of code block
                     break
                 else:

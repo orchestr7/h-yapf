@@ -108,3 +108,28 @@ class RunMainTest(yapf_test_helper.YAPFTest):
                          (var3 - var4))
         """)
         self.assertCodeEqual(expected_text, output_text)
+
+    def test_preceding_comments(self):
+        self.__setup_import_splitter(True, column_limit=20)
+
+        # In this case the AST tree would look like in the tree below, and
+        # we want it case to be properly handled (i.e. the comment should
+        # be completely ignored):
+        #
+        #   if_stmt
+        #     simple_stmt
+        #       COMMENT '# ======...'
+        #     NAME if
+        #     atom
+        #       LPAR (
+        #       NAME some_value
+        #       RPAR )
+        #     ...
+        #
+
+        input_text = textwrap.dedent("""\
+            # ==========================================
+            if (some_value):
+                pass
+        """)
+        output_text = FormatCode(input_text)[0]
