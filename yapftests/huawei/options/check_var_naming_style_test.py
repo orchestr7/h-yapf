@@ -122,3 +122,25 @@ class RunMainTest(testbase.WarnTestBase):
         FormatCode(input_source)
 
         self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 0)
+
+    def test_bare_star(self):
+        self.__setup('snake_case')
+
+        input_source = textwrap.dedent("""\
+            def fn(*, var): pass
+        """)
+        FormatCode(input_source)
+
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 0)
+
+    def test_variable_params(self):
+        self.__setup('snake_case')
+
+        input_source = textwrap.dedent("""\
+            def fn(*Args, **Kwargs): pass
+        """)
+        FormatCode(input_source)
+
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Args')
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Kwargs')
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 2)
