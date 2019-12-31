@@ -44,3 +44,30 @@ class RunMainTest(testbase.WarnTestBase):
         # around top-level functions
         self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE,
             'line: 13.*OtherVar')
+
+    def test_pseudo_parens(self):
+        #
+        # Check the second branch in `reformatter._FormatFinalLines()`.
+        #
+        # Ensure that `reformatted_lines` are correcly formed when
+        # when the following conditions hold:
+        #
+        #    if tok.is_pseudo_paren:
+        #        if (not tok.next_token.whitespace_prefix.startswith('\n') and
+        #            not tok.next_token.whitespace_prefix.startswith(' ')):
+        #          if (tok.previous_token.value == ':' or
+        #              tok.next_token.value not in ',}])'):
+        #              ...
+        #
+
+        style.SetGlobalStyle(
+            style.CreateStyleFromConfig(
+                f'{{based_on_style: pep8, '
+                f'indent_dictionary_value: true}}'))
+
+        input_text = textwrap.dedent("""\
+            {'a':1}
+        """)
+
+        # should not raise any exception
+        FormatCode(input_text, lines=[(10,10)])[0]
