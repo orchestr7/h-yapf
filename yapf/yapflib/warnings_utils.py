@@ -177,9 +177,9 @@ NAMING_STYLE_REGEXPS = dict(
         SNAKECASE = re.compile(r'[a-z_][a-z0-9_]+$'),
     ),
     varname = dict(
-        PASCALCASE = re.compile(r'((_{0,2}[A-Z][a-zA-Z0-9]*)|(__.*__)|(_))$'),
-        CAMELCASE = re.compile(r'((_{0,2}[a-z][a-zA-Z0-9]*)|(__.*__)|(_))$'),
-        SNAKECASE = re.compile(r'((_{0,2}[a-z][a-z0-9_]*)|(__.*__)|(_))$'),
+        PASCALCASE = re.compile(r'((_{0,2}[A-Z][a-zA-Z0-9]*)|(__.*__)|([_*]))$'),
+        CAMELCASE = re.compile(r'((_{0,2}[a-z][a-zA-Z0-9]*)|(__.*__)|([_*]))$'),
+        SNAKECASE = re.compile(r'((_{0,2}[a-z][a-z0-9_]*)|(__.*__)|([_*]))$'),
     ),
 )
 
@@ -430,9 +430,23 @@ def warn_vars_naming_style(messages, line, style):
     def iter_parameters(paramlist):
         for item in paramlist:
             tokens = iter_token_range(item.first_token, item.last_token)
-            tokens = filter(lambda t: t.name == 'NAME', tokens)
+            tokens = filter(lambda t: t.name in {'NAME', 'STAR'}, tokens)
             first = next(tokens, None)
-            assert first is not None
+
+            if first is None:
+                # This is possible when a comment is added to a function
+                # argument (in some cases, when there is a trailing comma):
+                #
+                #     def fn(arg1,
+                #         arg2, #comment
+                #         arg3,
+                #         ):
+                #         pass
+                #
+                assert item.first_token.name == 'COMMENT'
+                continue
+            if first.name == 'STAR':
+                yield next(tokens, first)
             yield first
 
     def get_func_args(uwl):
