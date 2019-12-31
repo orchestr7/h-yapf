@@ -17,6 +17,7 @@ from lib2to3.pgen2 import token
 from lib2to3.pygram import python_symbols as syms
 
 from . import pytree_utils
+from . import pytree_visitor
 from .format_token import FormatToken
 
 
@@ -389,6 +390,53 @@ def warn_module_naming_style(messages, filename, style):
         messages.add_to_file(Warnings.MODULE_NAMING_STYLE, modname=modname)
 
 
+def _find_parent(node, root, types):
+    while node is not root:
+        if node.type in types:
+            return node
+        node = node.parent
+
+    return None
+
+
+class _FindLValues(pytree_visitor.PyTreeVisitor):
+    def __init__(self, root):
+        self.lvalues = dict()
+        self._stack = []
+        self._chain = []
+
+        self.Visit(root)
+
+    def Visit_power(self, node):
+        self._stack.append('power')
+
+        try:
+            for child in node.children:
+                super().Visit(child)
+
+            self.lvalues[id(self._chain[-1])] = [n.value for n in self._chain]
+
+        except StopIteration:
+            pass
+
+        self._chain = []
+        self._stack.pop()
+
+    def Visit_NAME(self, node):
+        if self._stack:
+            self._chain.append(node)
+        else:
+            self.lvalues[id(node)] = [node.value]
+
+    def Visit_LPAR(self, node):
+        if self._stack:
+            # it is a function call, skip arguments
+            raise StopIteration()
+
+    def Visit_LSQB(self, node):
+        self.Visit_LPAR(node)
+
+
 def warn_vars_naming_style(messages, line, style):
     """ Check whether varibales and function argumens fit the naming rule."""
 
@@ -397,28 +445,27 @@ def warn_vars_naming_style(messages, line, style):
         return
 
     def is_expr(uwl):
-        if not uwl.tokens:
-            return
-
-        node = uwl.first.node
-        while node is not None:
-            if (isinstance(node, pytree.Node)
-                and pytree_utils.NodeName(node) == 'expr_stmt'):
-                return True
-            node = node.parent
-
-        return False
+        return (uwl.tokens
+                and _find_parent(uwl.first.node, None, [syms.expr_stmt]))
 
     def is_assignment(uwl):
         return (is_expr(uwl)
                 and next(filter(lambda t: t.is_name, uwl.tokens), None))
 
     def get_lhs_tokens(uwl):
+        root = _find_parent(uwl.first.node, None, [syms.expr_stmt])
+        lvalues = _FindLValues(root).lvalues
+
         for tok in uwl.tokens:
-            if tok.name == 'NAME':
-                yield tok
-            elif tok.name == 'EQUAL':
+            if tok.name == 'EQUAL':
                 break
+
+            if tok.is_name and id(tok.node) in lvalues:
+                chain = lvalues[id(tok.node)]
+                if (len(chain) == 1
+                    or (len(chain) == 2 and chain[0] == 'self')):
+                    yield tok
+
 
     def iter_token_range(first, last):
         while True:

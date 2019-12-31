@@ -157,3 +157,25 @@ class RunMainTest(testbase.WarnTestBase):
         FormatCode(input_source)
 
         self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 0)
+
+    def test_func_calls(self):
+        self.__setup('snake_case')
+
+        input_source = textwrap.dedent("""\
+            Func(Arg) = 1
+        """)
+        FormatCode(input_source)
+
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 0)
+
+    def test_chains(self):
+        self.__setup('snake_case')
+
+        input_source = textwrap.dedent("""\
+            Object.Value1 = 1
+            self.Value2 = 1
+        """)
+        FormatCode(input_source)
+
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Value2')
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 1)
