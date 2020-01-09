@@ -443,8 +443,10 @@ class _FindLValues(pytree_visitor.PyTreeVisitor):
     def Visit_LSQB(self, node):
         self.Visit_LPAR(node)
 
-    def Visit_EQUAL(self, node):
-        raise StopIteration()
+    def DefaultLeafVisit(self, node):
+        # any of '=', '+=', '-=', etc.
+        if 'EQUAL' in pytree_utils.NodeName(node):
+            raise StopIteration()
 
 
 def warn_vars_naming_style(messages, line, style):

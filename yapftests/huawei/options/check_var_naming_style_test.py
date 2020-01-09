@@ -192,3 +192,28 @@ class RunMainTest(testbase.WarnTestBase):
         self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Var1')
         self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Var2')
         self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 2)
+
+    def test_assignmets(self):
+        self.__setup('snake_case')
+
+        input_source = textwrap.dedent("""\
+            Var01 = 1
+            Var02 += 1
+            Var03 += 1
+            Var04 *= 1
+            Var05 /= 1
+            Var06 //= 1
+            Var07 %= 1
+            Var08 **= 1
+            Var09 >>= 1
+            Var10 <<= 1
+            Var11 &= True
+            Var12 |= True
+            Var13 ^= True
+            Var14 @= True
+        """)
+        FormatCode(input_source)
+
+        for i in range(1, 15):
+            self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Var%02d' % i)
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 14)
