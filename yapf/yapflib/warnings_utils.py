@@ -407,6 +407,13 @@ class _FindLValues(pytree_visitor.PyTreeVisitor):
 
         self.Visit(root)
 
+    def Visit_expr_stmt(self, node):
+        try:
+            for child in node.children:
+                super().Visit(child)
+        except StopIteration:
+            pass
+
     def Visit_power(self, node):
         self._stack.append('power')
 
@@ -435,6 +442,9 @@ class _FindLValues(pytree_visitor.PyTreeVisitor):
 
     def Visit_LSQB(self, node):
         self.Visit_LPAR(node)
+
+    def Visit_EQUAL(self, node):
+        raise StopIteration()
 
 
 def warn_vars_naming_style(messages, line, style):

@@ -179,3 +179,16 @@ class RunMainTest(testbase.WarnTestBase):
 
         self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Value2')
         self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 1)
+
+    def test_true_power(self):
+        self.__setup('snake_case')
+
+        input_source = textwrap.dedent("""\
+            Var1 = 2**2**2
+            Var2 = Var1**Var1
+        """)
+        FormatCode(input_source)
+
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Var1')
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Var2')
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 2)
