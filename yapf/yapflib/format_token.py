@@ -204,8 +204,9 @@ class FormatToken(object):
 
   def AdjustNewlinesBefore(self, newlines_before):
     """Change the number of newlines before this token."""
-    self.whitespace_prefix = ('\n' * newlines_before +
-                              self.whitespace_prefix.lstrip('\n'))
+    if not style.Get('SAVE_INITIAL_BLANKLINES'):
+        self.whitespace_prefix = ('\n' * newlines_before +
+                                  self.whitespace_prefix.lstrip('\n'))
 
   def RetainHorizontalSpacing(self, first_column, depth):
     """Retains a token's horizontal spacing."""
@@ -267,8 +268,11 @@ class FormatToken(object):
   @property
   def newlines(self):
     """The number of newlines needed before this token."""
-    return pytree_utils.GetNodeAnnotation(self.node,
-                                          pytree_utils.Annotation.NEWLINES)
+    if style.Get('SAVE_INITIAL_BLANKLINES'):
+        value = pytree_utils.Annotation.ORIGINAL_NEWLINES
+    else:
+        value = pytree_utils.Annotation.NEWLINES
+    return pytree_utils.GetNodeAnnotation(self.node, value)
 
   @property
   def must_split(self):

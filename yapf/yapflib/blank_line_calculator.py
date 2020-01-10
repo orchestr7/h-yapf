@@ -48,8 +48,48 @@ def CalculateBlankLines(tree):
   Arguments:
     tree: the top-level pytree node to annotate with subtypes.
   """
+  original_blank_lines_calculator = _OriginalBlankLinesCalculator()
+  original_blank_lines_calculator.Visit(tree)
+
   blank_line_calculator = _BlankLineCalculator()
   blank_line_calculator.Visit(tree)
+
+
+class _OriginalBlankLinesCalculator(pytree_visitor.PyTreeVisitor):
+    """ Save the original blacklines.
+
+    Computes how many blanklines there were in the original source file.
+    """
+
+    def __init__(self):
+        self.prev = 1
+
+    # Skip INDENT, DEDENT, and NEWLINE leaves - they are never (?) the
+    # frist token in an unwrapped line.
+
+    def Visit_INDENT(self, node):
+        pass
+
+    def Visit_DEDENT(self, node):
+        pass
+
+    def Visit_NEWLINE(self, node):
+        pass
+
+    def Visit_COMMENT(self, node):
+        # the lineno of a comment points to the last line of the comment
+        newlines = node.get_lineno() - self.prev - node.value.count('\n')
+        self.prev = node.get_lineno()
+        self._set_original_newlines(node, newlines)
+
+    def DefaultLeafVisit(self, node):
+        newlines = node.get_lineno() - self.prev
+        self.prev = node.get_lineno() + node.value.count('\n')
+        self._set_original_newlines(node, newlines)
+
+    def _set_original_newlines(self, node, n):
+        pytree_utils.SetNodeAnnotation(node,
+            pytree_utils.Annotation.ORIGINAL_NEWLINES, n)
 
 
 class _BlankLineCalculator(pytree_visitor.PyTreeVisitor):

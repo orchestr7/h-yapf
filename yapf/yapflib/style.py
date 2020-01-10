@@ -277,6 +277,8 @@ _STYLE_HELP = dict(
 
         1 + 2*3 - 4/5
       """),
+    SAVE_INITIAL_BLANKLINES=textwrap.dedent("""\
+      Preserve the original spaces between lines."""),
     SAVE_INITIAL_IDENTS_FORMATTING=textwrap.dedent("""\
       This option will allow to prevent formatting of indents """),
     SPACE_BETWEEN_ENDING_COMMA_AND_CLOSING_BRACKET=textwrap.dedent("""\
@@ -503,6 +505,7 @@ def CreatePEP8Style():
       INSERT_SPACE_AFTER_HASH_CHAR=False,
       JOIN_MULTIPLE_LINES=True,
       NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=set(),
+      SAVE_INITIAL_BLANKLINES=False,
       SAVE_INITIAL_IDENTS_FORMATTING=False,
       SPACE_BETWEEN_ENDING_COMMA_AND_CLOSING_BRACKET=True,
       SPACES_AROUND_POWER_OPERATOR=False,
@@ -752,6 +755,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     INSERT_SPACE_AFTER_HASH_CHAR=_BoolConverter,
     JOIN_MULTIPLE_LINES=_BoolConverter,
     NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=_StringSetConverter,
+    SAVE_INITIAL_BLANKLINES=_BoolConverter,
     SAVE_INITIAL_IDENTS_FORMATTING=_BoolConverter,
     FIX_SHEBANG_HEADER=_BoolConverter,
     FORMAT_COPYRIGHT_DOC_STRING=_BoolConverter,
