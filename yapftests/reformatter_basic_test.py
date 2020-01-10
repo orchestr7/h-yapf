@@ -2953,6 +2953,22 @@ class A:
         uwlines = yapf_test_helper.ParseAndUnwrap(unformatted_code)
         self.assertCodeEqual(unformatted_code, reformatter.Reformat(uwlines))
 
+  def testNoJoin(self):
+        style.Set('COLUMN_LIMIT', 0)
+        unformatted_code = textwrap.dedent("""\
+              if cond:
+                pass
+              if cond: pass
+
+
+              def foo():
+                if cond:
+                  pass
+                if cond: pass
+              """)
+        uwlines = yapf_test_helper.ParseAndUnwrap(unformatted_code)
+        self.assertCodeEqual(unformatted_code, reformatter.Reformat(uwlines))
+
 
 if __name__ == '__main__':
   unittest.main()
