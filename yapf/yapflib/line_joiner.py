@@ -34,6 +34,8 @@ Note: Because we don't allow the use of a semicolon to separate statements, it
 follows that there can only be at most two lines to join.
 """
 
+import math
+
 from yapf.yapflib import style
 
 _CLASS_OR_FUNC = frozenset({'def', 'class'})
@@ -52,8 +54,10 @@ def CanMergeMultipleLines(lines, last_was_merged=False):
     only happen if two consecutive lines can be joined, due to the style guide.
   """
   # The indentation amount for the starting line (number of spaces).
+  column_limit = style.Get('COLUMN_LIMIT') or float('inf')
+
   indent_amt = lines[0].depth * style.Get('INDENT_WIDTH')
-  if len(lines) == 1 or indent_amt > style.Get('COLUMN_LIMIT'):
+  if len(lines) == 1 or indent_amt > column_limit:
     return False
 
   if (len(lines) >= 3 and lines[2].depth >= lines[1].depth and
@@ -68,7 +72,7 @@ def CanMergeMultipleLines(lines, last_was_merged=False):
     # Don't join lines onto the starting line of a class or function.
     return False
 
-  limit = style.Get('COLUMN_LIMIT') - indent_amt
+  limit = column_limit - indent_amt
   if lines[0].last.total_length < limit:
     limit -= lines[0].last.total_length
 
@@ -106,4 +110,4 @@ def _CanMergeLineIntoIfStatement(lines, limit):
   if lines[1].last.total_length >= limit:
     # Don't merge lines if the result goes over the column limit.
     return False
-  return style.Get('JOIN_MULTIPLE_LINES')
+  return style.Get('JOIN_MULTIPLE_LINES') or math.isinf(limit)

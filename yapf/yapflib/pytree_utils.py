@@ -47,6 +47,7 @@ class Annotation(object):
   CHILD_INDENT = 'child_indent'
   NEWLINES = 'newlines'
   MUST_SPLIT = 'must_split'
+  ORIGINAL_NEWLINES = 'original_newlines'
   SPLIT_PENALTY = 'split_penalty'
   SUBTYPE = 'subtype'
 
