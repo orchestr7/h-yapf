@@ -279,7 +279,7 @@ _STYLE_HELP = dict(
       """),
     SAVE_INITIAL_BLANKLINES=textwrap.dedent("""\
       Preserve the original spaces between lines."""),
-    SAVE_INITIAL_IDENTS_FORMATTING=textwrap.dedent("""\
+    SAVE_INITIAL_INDENTS_FORMATTING=textwrap.dedent("""\
       This option will allow to prevent formatting of indents """),
     SPACE_BETWEEN_ENDING_COMMA_AND_CLOSING_BRACKET=textwrap.dedent("""\
       Insert a space between the ending comma and closing bracket of a list,
@@ -506,7 +506,7 @@ def CreatePEP8Style():
       JOIN_MULTIPLE_LINES=True,
       NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=set(),
       SAVE_INITIAL_BLANKLINES=False,
-      SAVE_INITIAL_IDENTS_FORMATTING=False,
+      SAVE_INITIAL_INDENTS_FORMATTING=False,
       SPACE_BETWEEN_ENDING_COMMA_AND_CLOSING_BRACKET=True,
       SPACES_AROUND_POWER_OPERATOR=False,
       SPACES_AROUND_DEFAULT_OR_NAMED_ASSIGN=False,
@@ -576,7 +576,7 @@ def CreateHuaweiStyle():
   style['NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS'] = '*'
   style['SPLIT_SINGLE_LINE_IMPORTS'] = True
   style['BLANK_LINES_AFTER_INDENTED_BLOCKS'] = True
-  style['SAVE_INITIAL_IDENTS_FORMATTING'] = False
+  style['SAVE_INITIAL_INDENTS_FORMATTING'] = False
   style['COLUMN_LIMIT'] = 80
   style['FORCE_LONG_LINES_WRAPPING'] = True
   style['INSERT_SPACE_AFTER_HASH_CHAR'] = True
@@ -756,7 +756,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     JOIN_MULTIPLE_LINES=_BoolConverter,
     NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS=_StringSetConverter,
     SAVE_INITIAL_BLANKLINES=_BoolConverter,
-    SAVE_INITIAL_IDENTS_FORMATTING=_BoolConverter,
+    SAVE_INITIAL_INDENTS_FORMATTING=_BoolConverter,
     FIX_SHEBANG_HEADER=_BoolConverter,
     FORMAT_COPYRIGHT_DOC_STRING=_BoolConverter,
     FORMAT_LAST_QUOTE_DOC_STRING=_BoolConverter,

@@ -651,7 +651,7 @@ TWO_BLANK_LINES = 3
 
 def _GetInitialIndentsFromSource(first_token):
   spaces = 0
-  if style.Get('SAVE_INITIAL_IDENTS_FORMATTING'):
+  if style.Get('SAVE_INITIAL_INDENTS_FORMATTING'):
         spaces = first_token.column
   return spaces
 
