@@ -130,3 +130,59 @@ class RunMainTest(yapf_test_helper.YAPFTest):
         output_text = FormatCode(input_text)[0]
 
         self.assertCodeEqual(input_text, output_text)
+
+    def test_comments_after_blocks(self):
+        self.__setup(True)
+
+        input_text = textwrap.dedent("""\
+            if condition:
+                pass
+            # comment
+            else:
+                pass
+        """)
+        output_text = FormatCode(input_text)[0]
+
+        self.assertCodeEqual(input_text, output_text)
+
+    def test_continuation(self):
+        self.__setup(True)
+
+        input_text = textwrap.dedent("""\
+            value = default_value \\
+                if other_value is None else other_value
+        """)
+        output_text = FormatCode(input_text)[0]
+
+        self.assertCodeEqual(input_text, output_text)
+
+
+    def test_blankline_after_block(self):
+        self.__setup(True)
+        style.Set('BLANK_LINES_AFTER_INDENTED_BLOCKS', True)
+
+        input_text = textwrap.dedent("""\
+            if condition:
+                pass
+            else:
+                pass
+        """)
+        output_text = FormatCode(input_text)[0]
+
+        self.assertCodeEqual(input_text, output_text)
+
+    def test_blankline_after_docstring(self):
+        self.__setup(True)
+
+        input_text = textwrap.dedent("""\
+            def fn():
+                ''' docstring
+                line 1
+                line 2
+                line 3
+                '''
+                pass
+        """)
+        output_text = FormatCode(input_text)[0]
+
+        self.assertCodeEqual(input_text, output_text)
