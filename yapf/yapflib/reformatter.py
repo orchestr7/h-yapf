@@ -637,11 +637,12 @@ def _FormatFirstToken(first_token, indent_depth, prev_uwline, final_lines):
       first_nested = True
       NESTED_DEPTH.append(indent_depth)
 
+  initial_indents = _GetInitialIndentsFromSource(first_token, prev_uwline)
   first_token.AddWhitespacePrefix(
       _CalculateNumberOfNewlines(first_token, indent_depth, prev_uwline,
                                  final_lines, first_nested),
       indent_level=indent_depth,
-      source_number_of_spaces=_GetInitialIndentsFromSource(first_token))
+      source_number_of_spaces=initial_indents)
 
 
 NO_BLANK_LINES = 1
@@ -649,10 +650,14 @@ ONE_BLANK_LINE = 2
 TWO_BLANK_LINES = 3
 
 
-def _GetInitialIndentsFromSource(first_token):
+def _GetInitialIndentsFromSource(first_token, prev_uwline):
   spaces = 0
   if style.Get('SAVE_INITIAL_INDENTS_FORMATTING'):
-        spaces = first_token.column
+      # the orginal horizontal position does not make sence when
+      # a line was not originally a separate line, but a part
+      # of another longer line
+      if prev_uwline is None or prev_uwline.lineno != first_token.lineno:
+          spaces = first_token.column
   return spaces
 
 
