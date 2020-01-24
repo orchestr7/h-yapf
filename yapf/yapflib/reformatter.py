@@ -726,7 +726,7 @@ def _CalculateNumberOfNewlines(first_token, indent_depth, prev_uwline,
       return ONE_BLANK_LINE
 
   if style.Get('BLANK_LINES_AFTER_INDENTED_BLOCKS'):
-    if prev_uwline.first.column > first_token.column:
+    if prev_uwline.depth > indent_depth:
       return ONE_BLANK_LINE
 
   if _IsClassOrDef(first_token):
