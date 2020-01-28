@@ -14,11 +14,11 @@ from yapftests import yapf_test_helper
 
 
 class RunMainTest(yapf_test_helper.YAPFTest):
-    def __check_test(self, pos_case, formatted_code):
+    def __check_test(self, enable, pattern, formatted_code):
         style.SetGlobalStyle(
             style.CreateStyleFromConfig(f"{{based_on_style: pep8 "
-                                        f"aggressively_move_doc_string_to_head:"
-                                        f"  {pos_case}}}"))
+                        f"aggressively_move_copyright_to_head: {enable} "
+                        f"copyright_pattern: {pattern}}}"))
         unformatted_code = textwrap.dedent("""\
                         # -*- coding: utf-8 -*-
                         import a1
@@ -52,7 +52,7 @@ class RunMainTest(yapf_test_helper.YAPFTest):
                         def f():
                             print('a')
                         """)
-        self.__check_test('Copyright Information', formatted_code)
+        self.__check_test(True, 'Copyright Information', formatted_code)
 
     def test_negative_case(self):
         formatted_code = textwrap.dedent("""\
@@ -69,4 +69,4 @@ class RunMainTest(yapf_test_helper.YAPFTest):
                         def f():
                             print('a')
                         """)
-        self.__check_test(None, formatted_code)
+        self.__check_test(False, '', formatted_code)
