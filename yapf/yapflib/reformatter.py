@@ -35,7 +35,7 @@ from yapf.yapflib import line_joiner
 from yapf.yapflib import pytree_utils
 from yapf.yapflib import style
 from yapf.yapflib import verifier
-import yapf.yapflib.warnings_utils as warns
+import yapf.yapflib.warnings.warnings_utils as warns
 from yapf.yapflib.fixers.fix_shebang_comment import fix_shebang_comment_header
 from yapf.yapflib.fixers.fix_copyright_doc_string import format_doc_strings
 
@@ -441,7 +441,7 @@ def _FormatFinalLines(final_lines):
             not tok.next_token.whitespace_prefix.startswith(' ')):
           if (tok.previous_token.value == ':' or
               tok.next_token.value not in ',}])'):
-            formatted_line.append((' ', tok. lineno))
+            formatted_line.append((' ', tok, lineno))
 
     formatted_lines.append(formatted_line)
 

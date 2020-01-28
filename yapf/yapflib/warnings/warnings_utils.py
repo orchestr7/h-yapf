@@ -11,13 +11,14 @@ import os
 import re
 import sys
 import textwrap
+import json
 
 from lib2to3 import pytree
 from lib2to3.pgen2 import token
 from lib2to3.pygram import python_symbols as syms
 
-from . import pytree_utils
-from .format_token import FormatToken
+from yapf.yapflib import pytree_utils
+from yapf.yapflib.format_token import FormatToken
 
 
 @unique
@@ -137,17 +138,21 @@ class Messages:
                 return value()
             return value
 
+
         lineno = self.get_lineno(msg.anchor)
         kwargs = {k: apply_callable(v) for k, v in msg.kwargs.items()}
 
-        text = [f'WARN {msg.warn.value}:']
-        if self.anchor_locations[msg.anchor] >= 0:
-            text.append(f'[filename: {self.filename}, line: {lineno}]:')
-        else:
-            text.append(f'[filename: {self.filename}]:')
-        text.append(f'{WARNINGS_DESCRIPTION[msg.warn]}'.format(**kwargs))
+        warn_dict = dict()
+        warn_dict['WARN'] = msg.warn.value
+        warn_dict['filename'] = self.filename
 
-        return ' '.join(text)
+        if self.anchor_locations[msg.anchor] >= 0:
+            warn_dict['line'] = lineno
+
+        warn_dict['message'] = f'{WARNINGS_DESCRIPTION[msg.warn]}'.format(**kwargs)
+
+        # sorting keys here to make output more deterministic
+        return json.dumps(warn_dict, sort_keys=True)
 
     def get_lineno(self, anchor):
         """ Return the location of an anchor."""

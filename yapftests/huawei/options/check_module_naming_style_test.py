@@ -5,12 +5,10 @@ Copyright Information: Huawei Technologies Co., Ltd. All Rights Reserved © 2010
 Change History: 2019-12-02 Created
 """
 
-import textwrap
-
-from yapf.yapflib import style, reformatter
+from yapf.yapflib import style
 from yapf.yapflib.style import StyleConfigError
 from yapf.yapflib.yapf_api import FormatCode
-import yapf.yapflib.warnings_utils as warns
+import yapf.yapflib.warnings.warnings_utils as warns
 
 from yapftests.huawei.options import testbase
 

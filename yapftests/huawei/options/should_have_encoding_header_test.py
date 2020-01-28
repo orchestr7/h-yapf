@@ -4,42 +4,32 @@ Function: RunMainTest class. Testing of SHOULD_HAVE_ENCODING_HEADER option
 Copyright Information: Huawei Technologies Co., Ltd. All Rights Reserved © 2010-2019
 Change History: 2019-12-04 09:40 Created
 """
-import sys
 import textwrap
 
-from yapf.yapflib import style, reformatter
-from yapftests import yapf_test_helper
+from yapf.yapflib import style
+from yapf.yapflib.warnings import warnings_utils
+from yapf.yapflib.yapf_api import FormatCode
 from yapftests.huawei.options import testbase
 
 
 class RunMainTest(testbase.WarnTestBase):
-    def __check_test(self, positive_case, formatted_code, option):
+    def __setup(self, enable):
         style.SetGlobalStyle(
-            style.CreateStyleFromConfig(f"{{based_on_style: pep8 "
-                                        f"{option}: "
-                                        f"{positive_case}}}"))
-        unformatted_code = textwrap.dedent("""\
-                        #!/usr/bin/env python
-                        import some_module
-                        # some comment                       
-                        """)
-
-        uwlines = yapf_test_helper.ParseAndUnwrap(unformatted_code)
-        reformatter.Reformat(uwlines, 'test_file')
-
-        self.assertCodeEqual(formatted_code, sys.stderr.get)
+            style.CreateStyleFromConfig(
+                f'{{based_on_style: pep8, '
+                f'should_have_encoding_header: {enable}}}'))
+        input_source = textwrap.dedent("""\
+                   def foo():
+                       pass
+                """)
+        FormatCode(input_source)
 
     def test_positive_case(self):
-        formatted_code = textwrap.dedent("""\
-            WARN 1: [filename: test_file, line: 1]: Each source file 
-            should have encoding header on the first or second line like [# -*- 
-            coding: <encoding format> -*-] (see also: pep-0263)
-             """).replace('\n', '') + '\n'
-
-        self.__check_test('True', formatted_code, 'should_have_encoding_header')
+        self.__setup(True)
+        self.assertWarnMessage(warnings_utils.Warnings.ENCODING, lineno=1,
+                               pattern='s')
+        self.assertWarnCount(warnings_utils.Warnings.ENCODING, 1)
 
     def test_negative_case(self):
-        formatted_code = ''
-
-        self.__check_test('False', formatted_code,
-                          'should_have_encoding_header')
+        self.__setup(False)
+        self.assertWarnCount(warnings_utils.Warnings.ENCODING, 0)
