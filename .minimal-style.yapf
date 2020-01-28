@@ -2,5 +2,6 @@
 
 based_on_style=pep8
 column_limit = 0
-save_initial_idents_formatting = true
+save_initial_indents_formatting = true
+save_initial_blanklines = true
 disable_splitting_by_semicolon = true

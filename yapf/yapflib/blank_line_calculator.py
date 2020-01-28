@@ -22,6 +22,8 @@ Annotations:
   newlines: The number of newlines required before the node.
 """
 
+from lib2to3 import pytree
+
 from yapf.yapflib import py3compat
 from yapf.yapflib import pytree_utils
 from yapf.yapflib import pytree_visitor
@@ -48,8 +50,74 @@ def CalculateBlankLines(tree):
   Arguments:
     tree: the top-level pytree node to annotate with subtypes.
   """
+  original_blank_lines_calculator = _OriginalBlankLinesCalculator()
+  original_blank_lines_calculator.Visit(tree)
+
   blank_line_calculator = _BlankLineCalculator()
   blank_line_calculator.Visit(tree)
+
+
+class _OriginalBlankLinesCalculator(pytree_visitor.PyTreeVisitor):
+    """ Save the original blacklines.
+
+    Computes how many blanklines there were in the original source file.
+    """
+
+    def __init__(self):
+        self._level = 0
+        self.first_tokens = []
+
+    def Visit(self, node):
+        # count the recursion depth in order to perform some final
+        # computations at the exit from the root node (i.e. when level == 0)
+        #
+        self._level += 1
+        super().Visit(node)
+        self._level -= 1
+
+        if self._level == 0: # the root node
+            self._compute_newlines()
+
+    def _compute_newlines(self):
+        leaves = sorted(self.first_tokens, key=pytree.Node.get_lineno)
+
+        prev = 1
+        for leaf in leaves:
+            offset = 0
+            if pytree_utils.NodeName(leaf) == 'COMMENT':
+                # the lineno of a comment points to the last line
+                # of that comment
+                offset = leaf.value.count('\n')
+
+            newlines = leaf.get_lineno() - prev - offset
+
+            prev = leaf.get_lineno()
+            if pytree_utils.NodeName(leaf) == 'STRING':
+                # account for multiline docstrings
+                prev += leaf.value.count('\n')
+
+            self._set_original_newlines(leaf, newlines)
+
+    # Skip INDENT, DEDENT, and NEWLINE leaves - they are never (?) the
+    # frist token in an unwrapped line.
+
+    def Visit_INDENT(self, node):
+        pass
+
+    def Visit_DEDENT(self, node):
+        pass
+
+    def Visit_NEWLINE(self, node):
+        pass
+
+    def DefaultLeafVisit(self, node):
+        if (not self.first_tokens
+            or self.first_tokens[-1].get_lineno != node.get_lineno()):
+            self.first_tokens.append(node)
+
+    def _set_original_newlines(self, node, n):
+        pytree_utils.SetNodeAnnotation(node,
+            pytree_utils.Annotation.ORIGINAL_NEWLINES, n)
 
 
 class _BlankLineCalculator(pytree_visitor.PyTreeVisitor):
@@ -162,8 +230,17 @@ class _BlankLineCalculator(pytree_visitor.PyTreeVisitor):
                                    num_newlines)
 
   def _IsTopLevel(self, node):
+    # This is added for the sole reason to keep the original behaviour,
+    # when comments placed on their own line always had column=0.
+    # We store the actual column value now in order to support the
+    # SAVE_INITIAL_INDENTS_FORMATTING option.
+    #
+    def first_leaf_is_comment(node):
+        first_leaf = pytree_utils.FirstLeafNode(node)
+        return pytree_utils.NodeName(first_leaf) == 'COMMENT'
+
     return (not (self.class_level or self.function_level) and
-            _StartsInZerothColumn(node))
+            (_StartsInZerothColumn(node) or first_leaf_is_comment(node)))
 
 
 def _StartsInZerothColumn(node):

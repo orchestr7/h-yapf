@@ -133,3 +133,5 @@ class RunMainTest(yapf_test_helper.YAPFTest):
                 pass
         """)
         output_text = FormatCode(input_text)[0]
+
+        self.assertCodeEqual(input_text, output_text)

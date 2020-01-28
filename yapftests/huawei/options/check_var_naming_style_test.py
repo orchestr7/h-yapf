@@ -157,3 +157,63 @@ class RunMainTest(testbase.WarnTestBase):
         FormatCode(input_source)
 
         self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 0)
+
+    def test_func_calls(self):
+        self.__setup('snake_case')
+
+        input_source = textwrap.dedent("""\
+            Func(Arg) = 1
+        """)
+        FormatCode(input_source)
+
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 0)
+
+    def test_chains(self):
+        self.__setup('snake_case')
+
+        input_source = textwrap.dedent("""\
+            Object.Value1 = 1
+            self.Value2 = 1
+        """)
+        FormatCode(input_source)
+
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Value2')
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 1)
+
+    def test_true_power(self):
+        self.__setup('snake_case')
+
+        input_source = textwrap.dedent("""\
+            Var1 = 2**2**2
+            Var2 = Var1**Var1
+        """)
+        FormatCode(input_source)
+
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Var1')
+        self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Var2')
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 2)
+
+    def test_assignmets(self):
+        self.__setup('snake_case')
+
+        input_source = textwrap.dedent("""\
+            Var01 = 1
+            Var02 += 1
+            Var03 += 1
+            Var04 *= 1
+            Var05 /= 1
+            Var06 //= 1
+            Var07 %= 1
+            Var08 **= 1
+            Var09 >>= 1
+            Var10 <<= 1
+            Var11 &= True
+            Var12 |= True
+            Var13 ^= True
+            Var14 @= True
+        """)
+        FormatCode(input_source)
+
+        for i in range(1, 15):
+            self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE, 'Var%02d' % i)
+        self.assertWarnCount(warns.Warnings.VAR_NAMING_STYLE, 14)
