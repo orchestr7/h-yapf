@@ -230,8 +230,17 @@ class _BlankLineCalculator(pytree_visitor.PyTreeVisitor):
                                    num_newlines)
 
   def _IsTopLevel(self, node):
+    # This is added for the sole reason to keep the original behaviour,
+    # when comments placed on their own line always had column=0.
+    # We store the actual column value now in order to support the
+    # SAVE_INITIAL_INDENTS_FORMATTING option.
+    #
+    def first_leaf_is_comment(node):
+        first_leaf = pytree_utils.FirstLeafNode(node)
+        return pytree_utils.NodeName(first_leaf) == 'COMMENT'
+
     return (not (self.class_level or self.function_level) and
-            _StartsInZerothColumn(node))
+            (_StartsInZerothColumn(node) or first_leaf_is_comment(node)))
 
 
 def _StartsInZerothColumn(node):
