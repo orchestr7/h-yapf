@@ -8,16 +8,19 @@ import sys
 import textwrap
 
 from yapf.yapflib import style, reformatter
-from yapftests import yapf_test_helper
+from yapf.yapflib.warnings import warnings_utils
+from yapf.yapflib.yapf_api import FormatCode
 from yapftests.huawei.options import testbase
 
 
 class RunMainTest(testbase.WarnTestBase):
-    def __check_test(self, positive_case, formatted_code, option):
+
+    def __setup(self, enable):
         style.SetGlobalStyle(
-            style.CreateStyleFromConfig(f"{{based_on_style: pep8 "
-                                        f"{option}: "
-                                        f"{positive_case}}}"))
+            style.CreateStyleFromConfig(
+                f'{{based_on_style: pep8, '
+                f'should_not_have_wildcard_imports: {enable}}}'))
+
         unformatted_code = textwrap.dedent("""\
                         #!/usr/bin/env python
                         # -*- coding: utf-8 -*-
@@ -25,22 +28,24 @@ class RunMainTest(testbase.WarnTestBase):
                         # some comment                       
                         from module import *
                         """)
-
-        uwlines = yapf_test_helper.ParseAndUnwrap(unformatted_code)
-        reformatter.Reformat(uwlines, 'test_file')
-
-        self.assertCodeEqual(formatted_code, sys.stderr.get)
+        FormatCode(unformatted_code)
 
     def test_positive_case(self):
-        formatted_code = textwrap.dedent("""\
-                        WARN 3: [filename: test_file, line: 5]: 
-                        Using of wildcard imports (import *) is a bad style in 
-                        python, it makes code less readable and can cause 
-                        potential code issues""").replace('\n', '') + '\n'
-        self.__check_test('True', formatted_code,
-                          'should_not_have_wildcard_imports')
+        self.__setup(True)
+
+        self.assertWarnCount(warnings_utils.Warnings.WILDCARD_IMPORT, 1)
+        self.assertWarnMessage(warnings_utils.Warnings.WILDCARD_IMPORT, lineno=5, pattern=".*wildcard.*")
+
 
     def test_negative_case(self):
-        formatted_code = textwrap.dedent('')
-        self.__check_test('False', formatted_code,
-                          'should_not_have_wildcard_imports')
+        self.__setup(False)
+        unformatted_code = textwrap.dedent("""\
+                        #!/usr/bin/env python
+                        # -*- coding: utf-8 -*-
+                        import some_module
+                        # some comment                       
+                        from module import *
+                        """)
+        self.assertWarnCount(warnings_utils.Warnings.WILDCARD_IMPORT, 0)
+
+

@@ -7,6 +7,7 @@ Change History: 2019-12-17 Created
 
 import sys
 import re
+import json
 from yapftests import yapf_test_helper
 
 
@@ -21,7 +22,11 @@ class WarnTestBase(yapf_test_helper.YAPFTest):
                 return ''.join(self.messages)
 
             def write(self, redirect_str):
-                self.messages.append(redirect_str)
+                try:
+                    self.messages.append(json.loads(redirect_str))
+                except json.JSONDecodeError:
+                   pass
+
 
         self.__orig_stderr = sys.stderr
         self._stderr = RedirectedStdErr()
@@ -35,23 +40,28 @@ class WarnTestBase(yapf_test_helper.YAPFTest):
 
     def __filter_warns(self, warnno):
         def check_warnno(warn):
-            return warn.startswith(f'WARN {warnno.value}')
+            return warn['WARN'] == warnno.value
+
         return filter(check_warnno, self._stderr.messages)
 
 
-    def assertWarnMessage(self, warnno, pattern):
+    def assertWarnMessage(self, warnno, pattern, lineno=None):
         def check_msg(warn):
-            return re.search(pattern, warn)
+            if lineno is not None and lineno != warn['line']:
+                return False
+            return re.search(pattern, warn['message'])
 
         try:
             warns = self.__filter_warns(warnno)
             next(filter(check_msg, warns))
         except StopIteration:
-            self.fail(f'No such message: warn={warnno} patern="{pattern}"')
+            self.fail(f'No such message: warn={warnno} (warnno={warnno.value})'
+                      f' patern="{pattern}"')
 
 
     def assertWarnCount(self, warnno, expected):
         warns = list(self.__filter_warns(warnno))
         n_warns = len(warns)
         if n_warns != expected:
-            self.fail(f'The warnings number mismatch: {n_warns} vs {expected}')
+            self.fail(f'The warnings number mismatch: {n_warns} (actual) vs'
+                      f' {expected} (expected)')

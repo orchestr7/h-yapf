@@ -9,7 +9,7 @@ import textwrap
 
 from yapf.yapflib import style
 from yapf.yapflib.yapf_api import FormatCode
-import yapf.yapflib.warnings_utils as warns
+import yapf.yapflib.warnings.warnings_utils as warns
 
 from yapftests.huawei.options import testbase
 
@@ -38,12 +38,12 @@ class RunMainTest(testbase.WarnTestBase):
 
         # one line added becaus the `if` statement was wrapped
         self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE,
-            'line: 3.*SomeVariable')
+            pattern='.*SomeVariable', lineno=3)
 
         # two more line added as the style requires two blank lines
         # around top-level functions
         self.assertWarnMessage(warns.Warnings.VAR_NAMING_STYLE,
-            'line: 13.*OtherVar')
+            pattern='.*OtherVar', lineno=13)
 
     def test_pseudo_parens(self):
         #

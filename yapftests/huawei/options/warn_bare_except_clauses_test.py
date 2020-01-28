@@ -6,7 +6,6 @@ Change History: 2019-12-18 Created
 """
 
 from yapf.yapflib import style
-import yapf.yapflib.warnings_utils as warns
 
 from yapftests.huawei.options import testbase
 

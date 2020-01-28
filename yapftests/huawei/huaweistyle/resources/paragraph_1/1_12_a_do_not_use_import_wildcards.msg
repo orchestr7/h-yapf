@@ -1,1 +1,1 @@
-WARN 3: [filename: 1_12_a_do_not_use_import_wildcards_warning_.py, line: 4]: Using of wildcard imports (import *) is a bad style in python, it makes code less readable and can cause potential code issues
+{"WARN": 3, "filename": "1_12_a_do_not_use_import_wildcards_warning_.py", "line": 4, "message": "Using of wildcard imports (import *) is a bad style in python, it makes code less readable and can cause potential code issues"}
