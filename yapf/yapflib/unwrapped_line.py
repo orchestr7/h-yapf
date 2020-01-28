@@ -216,6 +216,10 @@ class UnwrappedLine(object):
     return self.first.is_comment
 
   @property
+  def is_docstring(self):
+    return self.first.is_docstring
+
+  @property
   def is_func_definition(self):
       return self.first.node.parent.type == syms.funcdef
 

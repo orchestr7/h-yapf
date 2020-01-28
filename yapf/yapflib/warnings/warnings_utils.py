@@ -35,6 +35,7 @@ class Warnings(Enum):
     BARE_EXCEPT = 11
     LOST_EXCEPTION = 12
     MISPLACED_BARE_RAISE = 13
+    MISSING_COPYRIGHT = 14
 
 
 WARNINGS_DESCRIPTION = {
@@ -56,6 +57,8 @@ WARNINGS_DESCRIPTION = {
         "'{stmt}' in finally block may swallow exception"),
     Warnings.MISPLACED_BARE_RAISE: textwrap.dedent(
         "The raise statement is not inside an except clause"),
+    Warnings.MISSING_COPYRIGHT: textwrap.dedent(
+        "The copyright in missing in {modname}"),
     Warnings.MODULE_NAMING_STYLE: textwrap.dedent(
         "Invalid module name: {modname}"),
     Warnings.REDEFININED: textwrap.dedent(
@@ -202,8 +205,11 @@ def check_all_recommendations(uwlines, style, filename):
     warn_redefinition = RedefenitionChecker()
     warn_not_properly_encapsulated = ScriptsCodeIncapsulationChecker()
 
-    warn_module_naming_style(messages, filename, style)
+    modname = os.path.splitext(os.path.basename(filename))[0]
+
+    warn_module_naming_style(messages, modname, style)
     check_first_lines(messages, uwlines, style)
+    warn_missing_copyright(messages, modname, uwlines, style)
 
     prev_line = None
     for line in uwlines:
@@ -376,7 +382,7 @@ def warn_func_naming_style(messages, line, style):
                          funcname=funcname_tok.value)
 
 
-def warn_module_naming_style(messages, filename, style):
+def warn_module_naming_style(messages, modname, style):
     """ Check if module names fit the naming rule."""
 
     naming_style_name = style.Get('CHECK_MODULE_NAMING_STYLE')
@@ -384,11 +390,10 @@ def warn_module_naming_style(messages, filename, style):
         return
 
     # special cases, do nothing
-    if filename in {'<stdin>', '<unknown>'}:
+    if modname in {'<stdin>', '<unknown>'}:
         return
 
     naming_style = NAMING_STYLE_REGEXPS['modname'][naming_style_name]
-    modname = os.path.splitext(os.path.basename(filename))[0]
     if not naming_style.match(modname):
         messages.add_to_file(Warnings.MODULE_NAMING_STYLE, modname=modname)
 
@@ -781,3 +786,21 @@ def warn_misplaced_bare_raise(messages, line, style):
 
     if not is_in_except_clause(line.first.node) and len(line.tokens) == 1:
         messages.add(line.first, Warnings.MISPLACED_BARE_RAISE)
+
+
+def warn_missing_copyright(messages, modname, uwlines, style):
+    if not style.Get('WARN_MISSING_COPYRIGHT'):
+        return
+
+    pattern = style.Get('COPYRIGHT_PATTERN')
+    if not pattern:
+        return
+
+    for line in uwlines:
+        if line.is_comment:
+            continue
+        if not line.is_docstring:
+            break
+        if not re.search(pattern, line.first.value):
+            messages.add_to_file(Warnings.MISSING_COPYRIGHT, modname=modname)
+        break

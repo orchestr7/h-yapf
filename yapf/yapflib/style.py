@@ -454,6 +454,8 @@ _STYLE_HELP = dict(
     WARN_LOST_EXCEPTIONS=textwrap.dedent("""\
       Warn if `return` or `break` statements are used in a `finally` block,
       since they may silently swallow an exception."""),
+    WARN_MISSING_COPYRIGHT=textwrap.dedent("""\
+      Warn if a copyriht string is missing in a module"""),
     WARN_MISPLACED_BARE_RAISE=textwrap.dedent("""\
       Warn if a bare raise is used outside an exception statement"""),
     WARN_NOT_COMMENTED_GLOBAL_VARS=textwrap.dedent("""\
@@ -544,6 +546,7 @@ def CreatePEP8Style():
       WARN_BARE_EXCEPT_CLAUSES=False,
       WARN_INCORRECT_COMPARISON_WITH_NONE=False,
       WARN_LOST_EXCEPTIONS=False,
+      WARN_MISSING_COPYRIGHT=False,
       WARN_MISPLACED_BARE_RAISE=False,
       WARN_NOT_COMMENTED_GLOBAL_VARS=False,
       WARN_REDEFINITION=False,
@@ -588,6 +591,7 @@ def CreateHuaweiStyle():
   style['WARN_BARE_EXCEPT_CLAUSES'] = True
   style['WARN_INCORRECT_COMPARISON_WITH_NONE'] = True
   style['WARN_LOST_EXCEPTIONS'] = True
+  style['WARN_MISSING_COPYRIGHT'] = True
   style['WARN_MISPLACED_BARE_RAISE'] = True
   style['WARN_NOT_COMMENTED_GLOBAL_VARS'] = True
   style['WARN_REDEFINITION'] = True
@@ -799,6 +803,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     WARN_BARE_EXCEPT_CLAUSES=_BoolConverter,
     WARN_INCORRECT_COMPARISON_WITH_NONE=_BoolConverter,
     WARN_LOST_EXCEPTIONS=_BoolConverter,
+    WARN_MISSING_COPYRIGHT=_BoolConverter,
     WARN_MISPLACED_BARE_RAISE=_BoolConverter,
     WARN_NOT_COMMENTED_GLOBAL_VARS=_BoolConverter,
     WARN_REDEFINITION=_BoolConverter,
