@@ -85,9 +85,11 @@ def format_doc_strings(uwlines, style):
 
 
 def move_doc_string_to_head(uwlines, style):
-    doc_string_pattern = style.Get(
-        'AGGRESSIVELY_MOVE_DOC_STRING_TO_HEAD')
-    if doc_string_pattern is not None:
+    if not style.Get('AGGRESSIVELY_MOVE_COPYRIGHT_TO_HEAD'):
+        return
+
+    doc_string_pattern = style.Get('COPYRIGHT_PATTERN')
+    if doc_string_pattern:
         doc_token = get_copyright_doc_string(uwlines)
 
         # check that doc token exists and it is not the firstline

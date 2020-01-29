@@ -59,9 +59,9 @@ def Reformat(uwlines, filename='<unknown>', verify=False, lines=None):
   keep_line_splits = style.Get('COLUMN_LIMIT') == 0
 
   # special checks for a format of a header that can produce warnings
-  messages = warns.check_all_recommendations(uwlines, style, filename)
   fix_shebang_comment_header(uwlines, style)
   format_doc_strings(uwlines, style)
+  messages = warns.check_all_recommendations(uwlines, style, filename)
 
   for uwline in _SingleOrMergedLines(uwlines):
     first_token = uwline.first

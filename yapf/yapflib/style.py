@@ -58,7 +58,7 @@ _STYLE_HELP = dict(
       comments/doc strings from the beginning of the file.
       Note! It won't move indented imports from code blocks (functions/classes).
     """),
-    AGGRESSIVELY_MOVE_DOC_STRING_TO_HEAD=textwrap.dedent("""\
+    AGGRESSIVELY_MOVE_COPYRIGHT_TO_HEAD=textwrap.dedent("""\
     If enabled (True) will find a doc string with copyright information
      (Copyright Information:) and move it before imports (after other comments)
      in the beginning of the file
@@ -178,6 +178,8 @@ _STYLE_HELP = dict(
       enabled."""),
     CONTINUATION_INDENT_WIDTH=textwrap.dedent("""\
       Indent width used for line continuations."""),
+    COPYRIGHT_PATTERN=textwrap.dedent("""\
+      A pattern used to detect the copyright docsring."""),
     DEDENT_CLOSING_BRACKETS=textwrap.dedent("""\
       Put closing brackets on a separate line, dedented, if the bracketed
       expression can't fit in a single line. Applies to all kinds of brackets,
@@ -452,6 +454,8 @@ _STYLE_HELP = dict(
     WARN_LOST_EXCEPTIONS=textwrap.dedent("""\
       Warn if `return` or `break` statements are used in a `finally` block,
       since they may silently swallow an exception."""),
+    WARN_MISSING_COPYRIGHT=textwrap.dedent("""\
+      Warn if a copyriht string is missing in a module"""),
     WARN_MISPLACED_BARE_RAISE=textwrap.dedent("""\
       Warn if a bare raise is used outside an exception statement"""),
     WARN_NOT_COMMENTED_GLOBAL_VARS=textwrap.dedent("""\
@@ -466,7 +470,7 @@ _STYLE_HELP = dict(
 def CreatePEP8Style():
   return dict(
       AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD=False,
-      AGGRESSIVELY_MOVE_DOC_STRING_TO_HEAD=None,
+      AGGRESSIVELY_MOVE_COPYRIGHT_TO_HEAD=False,
       ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT=True,
       ALLOW_MULTILINE_LAMBDAS=False,
       ALLOW_MULTILINE_DICTIONARY_KEYS=False,
@@ -487,6 +491,7 @@ def CreatePEP8Style():
       COLUMN_LIMIT=79,
       CONTINUATION_ALIGN_STYLE='SPACE',
       CONTINUATION_INDENT_WIDTH=4,
+      COPYRIGHT_PATTERN='',
       DEDENT_CLOSING_BRACKETS=False,
       INDENT_CLOSING_BRACKETS=False,
       DISABLE_ALL_WARNINGS=False,
@@ -541,6 +546,7 @@ def CreatePEP8Style():
       WARN_BARE_EXCEPT_CLAUSES=False,
       WARN_INCORRECT_COMPARISON_WITH_NONE=False,
       WARN_LOST_EXCEPTIONS=False,
+      WARN_MISSING_COPYRIGHT=False,
       WARN_MISPLACED_BARE_RAISE=False,
       WARN_NOT_COMMENTED_GLOBAL_VARS=False,
       WARN_REDEFINITION=False,
@@ -569,7 +575,7 @@ def CreateGoogleStyle():
 def CreateHuaweiStyle():
   style = CreateGoogleStyle()
   style['AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD'] = True
-  style['AGGRESSIVELY_MOVE_DOC_STRING_TO_HEAD'] = 'Copyright Information: Huawei'
+  style['AGGRESSIVELY_MOVE_COPYRIGHT_TO_HEAD'] = True
   style['FORMAT_COPYRIGHT_DOC_STRING'] = True
   style['FORMAT_LAST_QUOTE_DOC_STRING'] = True
   style['SHOULD_HAVE_ENCODING_HEADER'] = True
@@ -578,12 +584,14 @@ def CreateHuaweiStyle():
   style['BLANK_LINES_AFTER_INDENTED_BLOCKS'] = True
   style['SAVE_INITIAL_INDENTS_FORMATTING'] = False
   style['COLUMN_LIMIT'] = 80
+  style['COPYRIGHT_PATTERN'] = 'Copyright Information: Huawei'
   style['FORCE_LONG_LINES_WRAPPING'] = True
   style['INSERT_SPACE_AFTER_HASH_CHAR'] = True
   style['SHOULD_NOT_HAVE_WILDCARD_IMPORTS'] = True
   style['WARN_BARE_EXCEPT_CLAUSES'] = True
   style['WARN_INCORRECT_COMPARISON_WITH_NONE'] = True
   style['WARN_LOST_EXCEPTIONS'] = True
+  style['WARN_MISSING_COPYRIGHT'] = True
   style['WARN_MISPLACED_BARE_RAISE'] = True
   style['WARN_NOT_COMMENTED_GLOBAL_VARS'] = True
   style['WARN_REDEFINITION'] = True
@@ -719,7 +727,7 @@ def _SimpleStringConverter(s):
 # Note: this dict has to map all the supported style options.
 _STYLE_OPTION_VALUE_CONVERTER = dict(
     AGGRESSIVELY_MOVE_ALL_IMPORTS_TO_HEAD=_BoolConverter,
-    AGGRESSIVELY_MOVE_DOC_STRING_TO_HEAD=_SimpleStringConverter,
+    AGGRESSIVELY_MOVE_COPYRIGHT_TO_HEAD=_BoolConverter,
     ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT=_BoolConverter,
     ALLOW_MULTILINE_LAMBDAS=_BoolConverter,
     ALLOW_MULTILINE_DICTIONARY_KEYS=_BoolConverter,
@@ -740,6 +748,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     COLUMN_LIMIT=int,
     CONTINUATION_ALIGN_STYLE=_ContinuationAlignStyleStringConverter,
     CONTINUATION_INDENT_WIDTH=int,
+    COPYRIGHT_PATTERN=_SimpleStringConverter,
     DEDENT_CLOSING_BRACKETS=_BoolConverter,
     INDENT_CLOSING_BRACKETS=_BoolConverter,
     DISABLE_ALL_WARNINGS=_BoolConverter,
@@ -794,6 +803,7 @@ _STYLE_OPTION_VALUE_CONVERTER = dict(
     WARN_BARE_EXCEPT_CLAUSES=_BoolConverter,
     WARN_INCORRECT_COMPARISON_WITH_NONE=_BoolConverter,
     WARN_LOST_EXCEPTIONS=_BoolConverter,
+    WARN_MISSING_COPYRIGHT=_BoolConverter,
     WARN_MISPLACED_BARE_RAISE=_BoolConverter,
     WARN_NOT_COMMENTED_GLOBAL_VARS=_BoolConverter,
     WARN_REDEFINITION=_BoolConverter,
