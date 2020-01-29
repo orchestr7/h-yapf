@@ -17,11 +17,7 @@ from lib2to3 import pytree
 from lib2to3.pgen2 import token
 from lib2to3.pygram import python_symbols as syms
 
-from . import pytree_utils
-from . import pytree_visitor
-from .format_token import FormatToken
-from yapf.yapflib import pytree_utils
-from yapf.yapflib.format_token import FormatToken
+from .. import pytree_utils, pytree_visitor
 
 
 @unique
