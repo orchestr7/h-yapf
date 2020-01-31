@@ -22,6 +22,7 @@ def move_lines_to_index(uwline_index_to, lineno, uwlines, lines):
     for line in lines:
         lineno_where_line_was_taken_from.append(line.lineno)
         for token in line.tokens:
+            # here we will restore correct lineno for moved lines
             token.node.lineno = lineno
             # hack to remove newlines between imports that we moved to top
             pytree_utils.SetNodeAnnotation(token.node,

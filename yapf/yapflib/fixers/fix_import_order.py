@@ -49,7 +49,8 @@ def move_all_imports_to_head(uwlines, style):
         #     # comment
         #     foo():
         # we don't want to split them and insert imports between them
-        if lineno_for_imports - prev_lineno == 1:
+        if (index_to_insert_imports != 0 and
+                (lineno_for_imports - prev_lineno == 1)):
             index_to_insert_imports -= 1
             lineno_for_imports = prev_lineno
 
@@ -66,3 +67,4 @@ def move_all_imports_to_head(uwlines, style):
             restore_lineno(index_to_insert_imports,
                            uwlines,
                            lineno_where_lines_were_taken_from, shift_size=1)
+
