@@ -47,7 +47,7 @@ class WarnTestBase(yapf_test_helper.YAPFTest):
 
     def assertWarnMessage(self, warnno, pattern, lineno=None):
         def check_msg(warn):
-            if lineno is not None and lineno != warn['line']:
+            if lineno is not None and lineno != warn['lineno']:
                 return False
             return re.search(pattern, warn['message'])
 

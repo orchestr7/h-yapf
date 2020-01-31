@@ -1,3 +1,3 @@
-{"WARN": 2, "filename": "2_11_a_global_vars_should_be_commented_warning_.py", "line": 3, "message": "Global variable VAR1 has missing detailed comment for it"}
-{"WARN": 2, "filename": "2_11_a_global_vars_should_be_commented_warning_.py", "line": 7, "message": "Global variable VAR3 has missing detailed comment for it"}
-{"WARN": 2, "filename": "2_11_a_global_vars_should_be_commented_warning_.py", "line": 9, "message": "Global variable VAR4 has missing detailed comment for it"}
+{"WARN": 2, "filename": "2_11_a_global_vars_should_be_commented_warning_.py", "lineno": 3, "message": "Global variable VAR1 has missing detailed comment for it", "warnline": "VAR1 = 1000"}
+{"WARN": 2, "filename": "2_11_a_global_vars_should_be_commented_warning_.py", "lineno": 7, "message": "Global variable VAR3 has missing detailed comment for it", "warnline": "VAR3 = 3000"}
+{"WARN": 2, "filename": "2_11_a_global_vars_should_be_commented_warning_.py", "lineno": 9, "message": "Global variable VAR4 has missing detailed comment for it", "warnline": "VAR4 = 4000 # this comment does not prevent the warning"}

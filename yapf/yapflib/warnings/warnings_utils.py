@@ -4,192 +4,18 @@ Function: all logic that is related with warnins will be here
 Copyright Information: Huawei Technologies Co., Ltd. All Rights Reserved © 2010-2019
 Change History: 2019-12-02 17:27 Created
 """
-from enum import Enum, unique
 import collections
 from functools import partial
 import os
 import re
-import sys
-import textwrap
-import json
 
 from lib2to3 import pytree
 from lib2to3.pgen2 import token
 from lib2to3.pygram import python_symbols as syms
 
+from yapf.yapflib.warnings.naming_styles import REGEXPS
+from yapf.yapflib.warnings.warn_msg import Messages, Warnings
 from .. import pytree_utils, pytree_visitor
-
-
-@unique
-class Warnings(Enum):
-    ENCODING = 1
-    GLOBAL_VAR_COMMENT = 2
-    WILDCARD_IMPORT = 3
-    CLASS_NAMING_STYLE = 4
-    FUNC_NAMING_STYLE = 5
-    VAR_NAMING_STYLE = 6
-    REDEFININED = 7
-    COMP_WITH_NONE = 8
-    MODULE_NAMING_STYLE = 9
-    SCRIPT_CODE_ENCAPSULATION = 10
-    BARE_EXCEPT = 11
-    LOST_EXCEPTION = 12
-    MISPLACED_BARE_RAISE = 13
-    MISSING_COPYRIGHT = 14
-
-
-WARNINGS_DESCRIPTION = {
-    Warnings.BARE_EXCEPT: textwrap.dedent(
-        "No exception type(s) specified."),
-    Warnings.CLASS_NAMING_STYLE: textwrap.dedent(
-        "Invalid class name: {classname}"),
-    Warnings.COMP_WITH_NONE: textwrap.dedent(
-        "Comparison to none should be `{var} {op} None`"),
-    Warnings.ENCODING: textwrap.dedent(
-        "Each source file should have encoding header on the first or second "
-        "line like [# -*- coding: <encoding format> -*-] (see also: pep-0263)"),
-    Warnings.FUNC_NAMING_STYLE: textwrap.dedent(
-        "Invalid function name: {funcname}"),
-    Warnings.GLOBAL_VAR_COMMENT: textwrap.dedent(
-        "Global variable {variable} has missing detailed comment for it"
-    ),
-    Warnings.LOST_EXCEPTION: textwrap.dedent(
-        "'{stmt}' in finally block may swallow exception"),
-    Warnings.MISPLACED_BARE_RAISE: textwrap.dedent(
-        "The raise statement is not inside an except clause"),
-    Warnings.MISSING_COPYRIGHT: textwrap.dedent(
-        "The copyright in missing in {modname}"),
-    Warnings.MODULE_NAMING_STYLE: textwrap.dedent(
-        "Invalid module name: {modname}"),
-    Warnings.REDEFININED: textwrap.dedent(
-        "'{name}' already defined here: lineno={first}"
-    ),
-    Warnings.SCRIPT_CODE_ENCAPSULATION: textwrap.dedent(
-        "All top-level code should be encapsulated in functions or classes. "
-        "Wrap it into `if __name__ == '__main__'` block."
-    ),
-    Warnings.VAR_NAMING_STYLE: textwrap.dedent(
-        "Invalid variable name: {variable}"),
-    Warnings.WILDCARD_IMPORT: textwrap.dedent(
-        "Using of wildcard imports (import *) is a bad style in python, "
-        "it makes code less readable and can cause potential code issues"
-    )
-}
-
-
-class Messages:
-    """Contains warnings and their locations. The `set_location()` method
-    allows to generate correctly foramtted messages that refer to the correct
-    position in the output file.
-    """
-
-    class Message:
-        def __init__(self, warn, anchor, kwargs):
-            self.warn = warn
-            self.anchor = anchor
-            self.kwargs = kwargs
-
-        def __repr__(self):
-            return repr(self.__dict__)
-
-    def __init__(self, filename):
-        self.filename = os.path.basename(filename)
-        self.messages = []
-        self.anchor_locations = dict()
-
-    def add(self, anchor, warn, **kwargs):
-        """ Add a message connected to an achor (i.e. some object representing
-        some entity in the source file).
-        """
-
-        self.add_anchor(anchor)
-        msg = self.Message(warn, anchor, kwargs)
-        self.messages.append(msg)
-
-    def add_to_file(self, warn, **kwargs):
-        """ Add a message connected to the source file itself."""
-
-        self.add(self.filename, warn, **kwargs)
-        self.set_location(self.filename, -1)
-
-    def add_anchor(self, anchor):
-        """ Add an entity which can be referred by a message."""
-
-        self.anchor_locations[anchor] = None
-
-    def __contains__(self, anchor):
-        return anchor in self.anchor_locations
-
-    def set_location(self, anchor, lineno):
-        """ Set the line number of an anchor."""
-
-        self.anchor_locations[anchor] = lineno
-
-    def show(self):
-        """ Print out all saved messages."""
-
-        messages = sorted(self.messages,
-            key=lambda m: self.get_lineno(m.anchor))
-        for msg in messages:
-            sys.stderr.write('%s\n' % self.__format_msg(msg))
-
-
-    def __format_msg(self, msg):
-        def apply_callable(value):
-            if callable(value):
-                return value()
-            return value
-
-
-        lineno = self.get_lineno(msg.anchor)
-        kwargs = {k: apply_callable(v) for k, v in msg.kwargs.items()}
-
-        warn_dict = dict()
-        warn_dict['WARN'] = msg.warn.value
-        warn_dict['filename'] = self.filename
-
-        if self.anchor_locations[msg.anchor] >= 0:
-            warn_dict['line'] = lineno
-
-        warn_dict['message'] = f'{WARNINGS_DESCRIPTION[msg.warn]}'.format(**kwargs)
-
-        # sorting keys here to make output more deterministic
-        return json.dumps(warn_dict, sort_keys=True)
-
-    def get_lineno(self, anchor):
-        """ Return the location of an anchor."""
-
-        return self.anchor_locations[anchor]
-
-
-# Describes naming style rules, such as
-#    PascalCase
-#    camelCase
-#    snake_case
-#
-NAMING_STYLE_REGEXPS = dict(
-    classname = dict(
-        PASCALCASE = re.compile(r'[A-Z_][a-zA-Z0-9]+$'),
-        CAMELCASE = re.compile(r'[a-z_][a-zA-Z0-9]+$'),
-        SNAKECASE = re.compile(r'[a-z_][a-z0-9_]+$'),
-    ),
-    funcname = dict(
-        PASCALCASE = re.compile(r'((_{0,2}[A-Z][a-zA-Z0-9]+)|(__.*__))$'),
-        CAMELCASE = re.compile(r'((_{0,2}[a-z][a-zA-Z0-9]+)|(__.*__))$'),
-        SNAKECASE = re.compile(r'((_{0,2}[a-z][a-z0-9_]+)|(__.*__))$'),
-    ),
-    modname = dict(
-        PASCALCASE = re.compile(r'[A-Z_][a-zA-Z0-9]+$'),
-        CAMELCASE = re.compile(r'[a-z_][a-zA-Z0-9]+$'),
-        SNAKECASE = re.compile(r'[a-z_][a-z0-9_]+$'),
-    ),
-    varname = dict(
-        PASCALCASE = re.compile(r'((_{0,2}[A-Z][a-zA-Z0-9]*)|(__.*__)|([_*]))$'),
-        CAMELCASE = re.compile(r'((_{0,2}[a-z][a-zA-Z0-9]*)|(__.*__)|([_*]))$'),
-        SNAKECASE = re.compile(r'((_{0,2}[a-z][a-z0-9_]*)|(__.*__)|([_*]))$'),
-    ),
-)
-
 
 encoding_regex = re.compile('^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
 
@@ -234,9 +60,9 @@ def check_all_recommendations(uwlines, style, filename):
 def check_first_lines(messages, uwlines, style):
     if len(uwlines) >= 1:
         first_line = uwlines[0]
-        first_token = first_line.tokens[0]
 
-        warn_if_no_encoding(messages, first_token, style)
+
+        warn_if_no_encoding(messages, first_line, style)
 
 
 # wildcard imports should not be used in code
@@ -249,7 +75,7 @@ def warn_wildcard_imports(messages, line, style):
     for tok in line.tokens:
         next_token = tok.next_token
         if tok.is_import_keyword and next_token.node.type == token.STAR:
-            messages.add(tok, Warnings.WILDCARD_IMPORT)
+            messages.add(tok, line.AsCode(), Warnings.WILDCARD_IMPORT)
             break
 
 
@@ -259,14 +85,15 @@ encoding_regex = re.compile('^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
 # will check if header contains encoding declaration in 1st or 2nd line
 # WARN: ENCODING_WARNING
 # Control option: SHOULD_HAVE_ENCODING_HEADER
-def warn_if_no_encoding(messages, first_token, style):
+def warn_if_no_encoding(messages, first_line, style):
     if style.Get('SHOULD_HAVE_ENCODING_HEADER'):
+        first_token = first_line.tokens[0]
         if first_token.is_comment:
             all_comments = first_token.value.split('\n')
             if is_comment_with_encoding(all_comments, first_token.lineno):
                 return
 
-        messages.add(first_token, Warnings.ENCODING)
+        messages.add(first_token, first_line.AsCode(), Warnings.ENCODING)
 
 
 def empty_newlines_in_the_beginning(lineno, comments):
@@ -330,8 +157,8 @@ def warn_if_global_vars_not_commented(messages, uwl, prev, style):
         return
 
     if (_is_global_var_definition(uwl)
-        and (prev is None or not _is_comment_line(prev))):
-        messages.add(uwl.first, Warnings.GLOBAL_VAR_COMMENT,
+            and (prev is None or not _is_comment_line(prev))):
+        messages.add(uwl.first, uwl.AsCode(), Warnings.GLOBAL_VAR_COMMENT,
                      variable=uwl.first.value)
 
 
@@ -354,11 +181,11 @@ def warn_class_naming_style(messages, line, style):
         return tok
 
     if line.tokens and line.is_class_definition:
-        naming_style = NAMING_STYLE_REGEXPS['classname'][naming_style_name]
+        naming_style = REGEXPS['classname'][naming_style_name]
 
         classname_tok = get_classname(line)
         if not naming_style.match(classname_tok.value):
-            messages.add(classname_tok, Warnings.CLASS_NAMING_STYLE,
+            messages.add(classname_tok, line.AsCode(), Warnings.CLASS_NAMING_STYLE,
                          classname=classname_tok.value)
 
 
@@ -374,11 +201,11 @@ def warn_func_naming_style(messages, line, style):
         return tok
 
     if line.tokens and line.is_func_definition:
-        naming_style = NAMING_STYLE_REGEXPS['funcname'][naming_style_name]
+        naming_style = REGEXPS['funcname'][naming_style_name]
 
         funcname_tok = get_funcname(line)
-        if not naming_style.match(funcname_tok. value):
-            messages.add(funcname_tok, Warnings.FUNC_NAMING_STYLE,
+        if not naming_style.match(funcname_tok.value):
+            messages.add(funcname_tok, line.AsCode(), Warnings.FUNC_NAMING_STYLE,
                          funcname=funcname_tok.value)
 
 
@@ -393,7 +220,7 @@ def warn_module_naming_style(messages, modname, style):
     if modname in {'<stdin>', '<unknown>'}:
         return
 
-    naming_style = NAMING_STYLE_REGEXPS['modname'][naming_style_name]
+    naming_style = REGEXPS['modname'][naming_style_name]
     if not naming_style.match(modname):
         messages.add_to_file(Warnings.MODULE_NAMING_STYLE, modname=modname)
 
@@ -483,9 +310,8 @@ def warn_vars_naming_style(messages, line, style):
             if tok.is_name and id(tok.node) in lvalues:
                 chain = lvalues[id(tok.node)]
                 if (len(chain) == 1
-                    or (len(chain) == 2 and chain[0] == 'self')):
+                        or (len(chain) == 2 and chain[0] == 'self')):
                     yield tok
-
 
     def iter_token_range(first, last):
         while True:
@@ -529,14 +355,14 @@ def warn_vars_naming_style(messages, line, style):
     else:
         return
 
-    naming_style = NAMING_STYLE_REGEXPS['varname'][naming_style_name]
+    naming_style = REGEXPS['varname'][naming_style_name]
     for tok in tokens:
         # explicitly allow UPPER CASE names, because constants sould be
         # named this way regargless the naming style
         if not (tok.value == 'self'
                 or tok.value.isupper()
                 or naming_style.match(tok.value)):
-            messages.add(tok, Warnings.VAR_NAMING_STYLE, variable=tok.value)
+            messages.add(tok, line.AsCode(), Warnings.VAR_NAMING_STYLE, variable=tok.value)
 
 
 class RedefenitionChecker:
@@ -560,8 +386,8 @@ class RedefenitionChecker:
         if name.value in self.__names[scope]:
             first = self.__first_defs[(scope, name.value)]
             messages.add_anchor(first)
-            messages.add(name, Warnings.REDEFININED, name=name.value,
-                first=partial(messages.get_lineno, first))
+            messages.add(name, line.AsCode(), Warnings.REDEFININED, name=name.value,
+                         first=partial(messages.get_lineno, first))
 
         else:
             self.__first_defs[(scope, name.value)] = name
@@ -628,15 +454,15 @@ def warn_incorrect_comparison_with_none(messages, line, style):
                 # may not be if, for excample, it is a function call.
 
                 if (isinstance(left, pytree.Leaf)
-                    or isinstance(right, pytree.Leaf)):
+                        or isinstance(right, pytree.Leaf)):
                     yield left, tok, right
 
     def add_warn(op, operand):
         if op.value == '==':
-            messages.add(op, Warnings.COMP_WITH_NONE,
+            messages.add(op, line.AsCode(), Warnings.COMP_WITH_NONE,
                          var=to_string(operand), op='is')
         elif op.value == '!=':
-            messages.add(op, Warnings.COMP_WITH_NONE,
+            messages.add(op, line.AsCode(), Warnings.COMP_WITH_NONE,
                          var=to_string(operand), op='is not')
 
     for left, op, right in find_comp_exprs(line):
@@ -665,8 +491,8 @@ class ScriptsCodeIncapsulationChecker:
 
         if prev_line is None:
             if (line.tokens
-                and line.is_comment
-                and line.first.value.startswith('#!')):
+                    and line.is_comment
+                    and line.first.value.startswith('#!')):
                 self.can_be_executed = True
 
         elif not self.can_be_executed:
@@ -694,15 +520,15 @@ def warn_bare_except_clauses(messages, line, style):
 
     def is_exception_handler(line):
         return (line.tokens
-            and line.first.is_keyword
-            and line.first.value == 'except'
-        )
+                and line.first.is_keyword
+                and line.first.value == 'except'
+                )
 
     def lack_exception_type(line):
         return not any(tok.is_name for tok in line.tokens)
 
     if is_exception_handler(line) and lack_exception_type(line):
-        messages.add(line.first, Warnings.BARE_EXCEPT)
+        messages.add(line.first, line.AsCode(), Warnings.BARE_EXCEPT)
 
 
 def _is_on_the_right_of(node, target):
@@ -759,8 +585,8 @@ def warn_lost_exception(messages, line, style):
         return is_in_finally_block(node.parent)
 
     if is_in_finally_block(line.first.node):
-        messages.add(line.first, Warnings.LOST_EXCEPTION,
-            stmt=line.first.value)
+        messages.add(line.first, line.AsCode(), Warnings.LOST_EXCEPTION,
+                     stmt=line.first.value)
 
 
 def warn_misplaced_bare_raise(messages, line, style):
@@ -779,13 +605,13 @@ def warn_misplaced_bare_raise(messages, line, style):
 
         if node.type == syms.suite and node.parent.type == syms.try_stmt:
             return (_is_on_the_right_of(node, 'except')
-                or _is_on_the_right_of(node, syms.except_clause)
-            )
+                    or _is_on_the_right_of(node, syms.except_clause)
+                    )
 
         return is_in_except_clause(node.parent)
 
     if not is_in_except_clause(line.first.node) and len(line.tokens) == 1:
-        messages.add(line.first, Warnings.MISPLACED_BARE_RAISE)
+        messages.add(line.first, line.AsCode(), Warnings.MISPLACED_BARE_RAISE)
 
 
 def warn_missing_copyright(messages, modname, uwlines, style):
