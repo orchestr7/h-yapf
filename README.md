@@ -6,6 +6,29 @@ Unfortunately yapf is very monolith itself and needs changes in hardcoded logic 
 We all hope that one day we will merge at least some changes from this repo to original repo.
 
 
+# How to build it for windows
+1. Install `pyinstaller` : https://www.pyinstaller.org/
+
+2. `pyinstaller $PATH_TO_DIRECTORY_WITH_YAPF\huawei-yapf\yapf\__main__.py --name "huawei-yapf" -F`
+
+3. Use `dist\huawei-yapf.exe`
+
+# How to use it
+that will print all styles and all configurations available:
+$ huawe-yapf.exe --style-help 
+
+# To see all available rules use:
+$ huawei-yapf.exe --style-help
+
+Run with default Huawei code style
+$ Huawei-yapf.exe $SOME_YOUR_DIR_WITH_PYTHON
+
+# How to use only one inspection (with others disabled)
+Default style with no extra changes: `based_on_style: pep8 column_limit: 0 save_initial_indents_formatting: true save_initial_blanklines: true disable_splitting_by_semicolon: true`
+For example we are trying to run: `should_have_encoding_header`
+`$ huawei-yapf.exe --style="{ based_on_style: pep8 column_limit: 0 save_initial_indents_formatting: true save_initial_blanklines: true disable_splitting_by_semicolon: true should_have_encoding_header: true }"` $SOME_YOUR_DIR_WITH_PYTHON
+
+
 # Huawei Python Coding Style Guide
 
 ## Huawei Technologies Co., Ltd. All Rights Reserved.
