@@ -9,6 +9,7 @@ import contextlib
 import glob
 import os
 import sys
+import re
 
 from yapf.yapflib import yapf_api
 from yapf.yapflib import style
@@ -37,7 +38,9 @@ class RunMainTest(yapf_test_helper.YAPFTest):
 
                 # test checks warnings (stderr)
                 if self.WARN in test_name:
-                    self.assertCodeEqual(expected, sys.stderr.get)
+                    expected_warn = re.sub('filename.*,', '', expected)
+                    real_warn = re.sub('filename.*,', '', sys.stderr.get)
+                    self.assertCodeEqual(expected_warn, real_warn)
 
                 # test checks fixes
                 if self.INCORRECT in test_name:

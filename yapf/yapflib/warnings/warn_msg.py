@@ -82,7 +82,7 @@ class Messages:
             return repr(self.__dict__)
 
     def __init__(self, filename):
-        self.filename = os.path.basename(filename)
+        self.filename = os.path.abspath(filename)
         self.messages = []
         self.anchor_locations = dict()
 
