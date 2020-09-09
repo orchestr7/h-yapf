@@ -15,7 +15,7 @@ We all hope that one day we will merge at least some changes from this repo to o
 
 # How to use it
 that will print all styles and all configurations available:
-$ huawe-yapf.exe --style-help 
+`$ huawe-yapf.exe --style-help` 
 
 # To see all available rules use:
 $ huawei-yapf.exe --style-help
