@@ -92,7 +92,7 @@ def move_doc_string_to_head(uwlines, style):
     if doc_string_pattern:
         doc_token = get_copyright_doc_string(uwlines)
 
-        # check that doc token exists and it is not the firstline
+        # check that doc token exists and it is not the first line
         if doc_token and doc_token.index_in_uwline != 0:
             doc_token.set_copyright_pattern(doc_string_pattern)
 

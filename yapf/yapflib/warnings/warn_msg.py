@@ -21,6 +21,7 @@ class Warnings(Enum):
     LOST_EXCEPTION = 12
     MISPLACED_BARE_RAISE = 13
     MISSING_COPYRIGHT = 14
+    AGGRESSIVELY_MOVE_COPYRIGHT_TO_HEAD = 15
 
 
 WARNINGS_DESCRIPTION = {
@@ -58,6 +59,9 @@ WARNINGS_DESCRIPTION = {
     Warnings.WILDCARD_IMPORT: textwrap.dedent(
         "Using of wildcard imports (import *) is a bad style in python, "
         "it makes code less readable and can cause potential code issues"
+    ),
+    Warnings.AGGRESSIVELY_MOVE_COPYRIGHT_TO_HEAD: textwrap.dedent(
+      "Module comments (with copyright) should be written on the top of the file. Can be autocorrected. "
     )
 }
 

@@ -16,6 +16,7 @@ from lib2to3.pygram import python_symbols as syms
 from yapf.yapflib.warnings.naming_styles import REGEXPS
 from yapf.yapflib.warnings.warn_msg import Messages, Warnings
 from .. import pytree_utils, pytree_visitor
+from ..fixers.fix_copyright_doc_string import get_copyright_doc_string
 
 encoding_regex = re.compile('^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
 
@@ -36,6 +37,7 @@ def check_all_recommendations(uwlines, style, filename):
     warn_module_naming_style(messages, modname, style)
     check_first_lines(messages, uwlines, style)
     warn_missing_copyright(messages, modname, uwlines, style)
+    incorrect_order_of_doc(messages, modname, uwlines, style)
 
     prev_line = None
     for line in uwlines:
@@ -626,7 +628,27 @@ def warn_missing_copyright(messages, modname, uwlines, style):
         if line.is_comment:
             continue
         if not line.is_docstring:
+            messages.add_to_file(Warnings.MISSING_COPYRIGHT, modname=modname)
             break
         if not re.search(pattern, line.first.value):
             messages.add_to_file(Warnings.MISSING_COPYRIGHT, modname=modname)
         break
+
+
+def incorrect_order_of_doc(messages, modname, uwlines, style):
+  """just a hack to raise a warning in case when copyright is not in the right place"""
+  # FixMe: this will check the code after it was already fixed, so there should not be any warnings in this case
+  # Need to think how to enhance it
+  if not style.Get('AGGRESSIVELY_MOVE_COPYRIGHT_TO_HEAD'):
+    return
+
+  doc_string_pattern = style.Get('COPYRIGHT_PATTERN')
+  if doc_string_pattern:
+    doc_token = get_copyright_doc_string(uwlines)
+
+    # check that doc token exists and it is not the first line
+    if doc_token and doc_token.index_in_uwline != 0:
+      doc_token.set_copyright_pattern(doc_string_pattern)
+      if doc_token.has_copyright():
+        messages.add_to_file(Warnings.AGGRESSIVELY_MOVE_COPYRIGHT_TO_HEAD, modname = modname)
+
