@@ -1,5 +1,7 @@
-﻿Thanks to a perfect tool YAPF: https://github.com/google/yapf, it has helped a lot in implementing the below standard.
-This fork contains customization of YAPF for Huawei code style.
+All rights on the original code are reserved and belong to Google Inc. This fork of original [yapf code](https://github.com/google/yapf) contains new customized code and also Licensed under the Apache License, Version 2.0. 
+
+Thanks to a perfect tool YAPF: https://github.com/google/yapf, it has helped a lot in implementing the below standard.
+This fork contains customization of YAPF for Huawei code style. 
 
 Unfortunately yapf is very monolith itself and needs changes in hardcoded logic when you want to change some behavior.
 
